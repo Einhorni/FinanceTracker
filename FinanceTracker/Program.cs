@@ -17,7 +17,7 @@ using System.Xml.Linq;
 
 /*      TODO: 
  *      Log-In
- *      Begrüßung
+ *      (Begrüßung)
  *      try catch blocks in IOs   
  *      Balance not valid - else Block: 2 mal falsche Eingabe, dann MainMenu mit Hinweis: falsche Eingabe
  *Accounts
