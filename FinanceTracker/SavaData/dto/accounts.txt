@@ -1,0 +1,1 @@
+[{"Id":"955709a1-fb06-42d0-8f76-077962f4c77e","Name":"sdf","Balance":1.0,"Currency":"ETF","AccountType":"Girokonto"},{"Id":"ba83621b-1a2f-49af-a1f8-b30722ffdf64","Name":"kto2","Balance":5.0,"Currency":"EUR","AccountType":"Girokonto"}]

@@ -1,0 +1,1 @@
+[{"Id":"3f50f965-d025-49b2-9bc0-907ee644b6ef","Name":"name","Balance":4.0,"Currency":0},{"Id":"b734f944-39c1-4809-8e24-fff344fa62d2","Name":"snd acc","Balance":0.0,"Currency":3}]
