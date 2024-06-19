@@ -22,6 +22,8 @@ using System.Xml.Linq;
  *      Balance not valid - else Block: 2 mal falsche Eingabe, dann MainMenu mit Hinweis: falsche Eingabe
  *Accounts
  *      2! max. 7 accounts
+ *      !writing an Interface IAccountRepository: Account List
+ *      !write a Dependency Injection and make the Repository not static
  *      bei weiteren muss ein anderes gelöscht werden
  *      1! Anlegen unterschiedlicher Konten
  *      Beschränken der Currency je nach Ktotyp
@@ -37,6 +39,11 @@ using System.Xml.Linq;
  *      
  *      
  * TODO: Transaction Types und Transkationen irgendwann in DB speichern
+ * TODO: Web App
+ *      Account und Transactions accesible via ID, InterfaceRepository (ItemEnumerable, GetAccountbyId, GetAccountbyType)
+ *      Währungen Speichern / API???
+ *      Kategorien speichern, auch mit Interface und Repository
+ *      Filter (Active, inactive) (category) accounts mit LINQ
 */
 
 

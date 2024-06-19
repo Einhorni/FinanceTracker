@@ -14,7 +14,7 @@ namespace FinanceTracker.Classes
         public Guid Id;
         public string Name { get; set; } = string.Empty;
         public decimal Balance { get; set; }
-        public Currency Currency { get; set; }
+        public Currency Currency { get; set; } //= default!;
         //private List<Transaction> Transactions { get; set; }
            
         
