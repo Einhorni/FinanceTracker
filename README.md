@@ -3,4 +3,5 @@
 ### Things included 
 * Basic sytnax and classes
 * switches, if-statements and loops
-* IO
+* IO, Repositories
+* Dependency Injection
