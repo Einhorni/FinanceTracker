@@ -7,46 +7,6 @@ using FinanceTracker.AccountRepository;
 using System.Xml.Linq;
 
 
-//const: werte, die sich nie ändern, mathematische Dinger
-//readonly, z. B. connections string
-
-//Accounttyp mit "is" erkennen, als else: Girokonto
-//In CreateAccountFromDTO() testen, ob ich auch einfach die Klasse erkennen kann mit 
-//if (account is Girokonto)
-//oder switch (account) {case is Girokonto: ...} 
-
-/*      TODO: 
- *      Log-In
- *      (Begrüßung)
- *      try catch blocks in IOs   
- *      Balance not valid - else Block: 2 mal falsche Eingabe, dann MainMenu mit Hinweis: falsche Eingabe
- *Accounts
- *      2! max. 7 accounts
- *      !writing an Interface IAccountRepository: Account List
- *      !write a Dependency Injection and make the Repository not static
- *      bei weiteren muss ein anderes gelöscht werden
- *      1! Anlegen unterschiedlicher Konten
- *      Beschränken der Currency je nach Ktotyp
- *Transaktionen
- *      Addieren und Subtrahieren als 2 verschiedene Operationen
- *      3! Transaktionen in separater Datei speichern (mit Kto Id)
- *      Transaktionen laden und mit richtigem Konto zusammenbringen -> neue Balance berechnen
- *      Transactions zwischen Accounts, wenn Curreny passt - im Fall D/E, Währung anpassen?
- *Beenden
- *      Automatisches Speichern der Transaktionen vor Programmbeendigung
- *      
- *Tests
- *      
- *      
- * TODO: Transaction Types und Transkationen irgendwann in DB speichern
- * TODO: Web App
- *      Account und Transactions accesible via ID, InterfaceRepository (ItemEnumerable, GetAccountbyId, GetAccountbyType)
- *      Währungen Speichern / API???
- *      Kategorien speichern, auch mit Interface und Repository
- *      Filter (Active, inactive) (category) accounts mit LINQ
-*/
-
-
 
 bool mainExit = false;
 bool showMainMenu = false;

@@ -11,14 +11,30 @@ using FinanceTracker.AccountRepository;
 namespace FinanceTracker.Utilities
 {
 
-    //alles was die anzeige betrifft, Properties, Aufbereitung der Daten zur Anzeige, 
-
-    internal class Helper
+    internal class Mappings
     {
-        public decimal Balance { get; set; }
-        public override string ToString()
+        public static Currency CreateCurrency(string currencyString)
         {
-            return ($"Current balance = {Balance}");
+            Currency currency = new();
+            switch (currencyString)
+            {
+                case "b":
+                    currency = Currency.Bitcoin;
+                    break;
+
+                case "d":
+                    currency = Currency.Dollar;
+                    break;
+
+                case "e":
+                    currency = Currency.EUR;
+                    break;
+
+                case "f":
+                    currency = Currency.ETF;
+                    break;
+            }
+            return currency;
         }
     }
 
@@ -111,7 +127,7 @@ namespace FinanceTracker.Utilities
 
                 if (currencyString == "b" || currencyString == "d" || currencyString == "e" || currencyString == "f")
                 {
-                    currency = Account.CreateCurrency(currencyString);
+                    currency = Mappings.CreateCurrency(currencyString);
                     Girokonto account = new(name, balance, currency, Guid.Empty);
 
                     accounts.Add(account);
@@ -167,9 +183,6 @@ namespace FinanceTracker.Utilities
                         View.AfterTransactionMenuLoop(entry, account, showMainMenu, mainExit);
                         showMainMenu = true;
                         break;
-                    //case "2":
-                    //    //hier muss der Code rein, um ein neues Konto einzugeben
-                    //    break;
                     case "9":
                         showMainMenu = true;
                         break;
@@ -189,7 +202,7 @@ namespace FinanceTracker.Utilities
 
             if (decimal.TryParse(amountString, out decimal result)) //!!!!der name hinter dem out wird nach dem tryparse verwendet und muss vor nicht initialisiert werden
             {
-                Regular newTransaction = new(result, "new", "ny");
+                Irregular newTransaction = new(result, "new", "ny");
                 account.Balance = account.AddIncome(result);
             }
                     

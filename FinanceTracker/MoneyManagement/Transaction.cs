@@ -16,9 +16,9 @@ namespace FinanceTracker.Classes
     }
 
 
-    class Regular : Transaction
+    class Irregular : Transaction
     {
-        public Regular (decimal Amount, string Title, string Category)
+        public Irregular (decimal Amount, string Title, string Category)
         {
             Guid account = Guid.NewGuid();
             decimal amount = Amount;
@@ -28,7 +28,7 @@ namespace FinanceTracker.Classes
         }
     }
 
-    class Irregular : Transaction
+    class Regular : Transaction
     {
         public decimal Amount { get; set; }
         public string Title { get; set; } = String.Empty;

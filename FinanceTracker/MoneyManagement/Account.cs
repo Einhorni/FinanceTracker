@@ -15,40 +15,12 @@ namespace FinanceTracker.Classes
         public string Name { get; set; } = string.Empty;
         public decimal Balance { get; set; }
         public Currency Currency { get; set; } //= default!;
-        //private List<Transaction> Transactions { get; set; }
            
-        
-
         public decimal AddIncome(decimal amount)
         { return Balance + amount; }
 
         public decimal SubstractExpense(decimal amount)
-        { return Balance - amount; }
-
-        public static Currency CreateCurrency (string currencyString)
-        {
-            Currency currency = new();
-            switch (currencyString)
-            {
-                case "b":
-                    currency = Currency.Bitcoin;
-                    break;
-
-                case "d":
-                    currency = Currency.Dollar;
-                    break;
-
-                case "e":
-                    currency = Currency.EUR;
-                    break;
-
-                case "f":
-                    currency = Currency.ETF;
-                    break;
-            }
-            return currency;
-        }
-        
+        { return Balance - amount; } 
     }
 
     public class Girokonto : Account
