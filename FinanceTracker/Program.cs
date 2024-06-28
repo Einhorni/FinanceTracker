@@ -3,15 +3,18 @@ using FinanceTracker.Classes;
 using FinanceTracker.Utilities;
 using System.ComponentModel.Design;
 using System.Security.Principal;
-using FinanceTracker.AccountRepository;
+using FinanceTracker.DataAccess;
 using System.Xml.Linq;
+using FinanceTracker.MoneyManagement;
+using System.Security.Cryptography.X509Certificates;
 
 
 
 bool mainExit = false;
 bool showMainMenu = false;
 
-List<Account> accounts = AccountRepository.LoadAccounts();
+AccountManager accountManager = new AccountManager(new AccountRepository());
+List<Account> accounts = accountManager.Accounts;
 
 do
 {
@@ -24,45 +27,27 @@ do
         
     }
      
-    
-
-
-
     string entry = View.MainMenu(accounts);
     int entryAsInt;
-    bool isInt = Int32.TryParse(entry, out entryAsInt);
+    bool mainMenuEntryIsInt = Int32.TryParse(entry, out entryAsInt);
 
 
-    if (isInt)
+    if (mainMenuEntryIsInt)
     {
+        //Zeige Account Funtionen an
         if (entryAsInt <= accounts.Count)
         {
             View.TransactionMenu(accounts[entryAsInt - 1]);
             View.AfterTransactionMenuLoop(entry, accounts[entryAsInt - 1], showMainMenu, mainExit);
 
-            break;
+            continue;
         }
 
         else if (entryAsInt == accounts.Count + 1 && entryAsInt > accounts.Count)
-        {
-            string name = View.GetAccoutName();
+            View.CreateAccount(showMainMenu, accounts);
 
-            if (name != "9" && name != "")
-            {
-                string balanceString = View.GetAccountBalance();
 
-                if (decimal.TryParse(balanceString, out decimal balance))
-                {
-
-                    View.GetAccountCurrencyLoop(name, balance, showMainMenu, showMainMenu, accounts);
-
-                }
-                else //TODO: balance else not valid ask again 2 times, else exit, wie get curreny loop
-                { showMainMenu = true; }
-            }
-        }
-
-        else if (entryAsInt == 4)
+        else if (entryAsInt == (9))
             mainExit = true;
 
         else

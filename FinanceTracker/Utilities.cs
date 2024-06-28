@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using FinanceTracker.DataAccess;
 using FinanceTracker.Classes;
-using FinanceTracker.AccountRepository;
+using FinanceTracker.DataAccess;
+using FinanceTracker.MoneyManagement;
 
 namespace FinanceTracker.Utilities
 {
@@ -40,7 +35,7 @@ namespace FinanceTracker.Utilities
 
     internal static class View
     {
-        public static string MainMenu(List<Account> accounts)
+        public static string MainMenu(List<Classes.Account> accounts)
         {
             Console.WriteLine("");
             for (int i = 0; i <= accounts.Count-1; i++)
@@ -48,9 +43,28 @@ namespace FinanceTracker.Utilities
                 Console.WriteLine($"{i+1} - Make a transaction in account: {accounts[i].Name}");
             }
             Console.WriteLine($"{accounts.Count +1} - Create a new account");
-            Console.WriteLine($"{accounts.Count +2} - Exit ");
+            Console.WriteLine($"9 - Exit ");
             string entry = Console.ReadLine() ?? String.Empty;
             return entry;
+        }
+
+        public static void CreateAccount(bool showMainMenu, List<Account> accounts)
+        {
+            string name = View.GetAccoutName();
+
+            if (name != "9" && name != "")
+            {
+                string balanceString = View.GetAccountBalance();
+
+                if (decimal.TryParse(balanceString, out decimal balance))
+                {
+
+                    View.GetAccountCurrencyLoop(name, balance, showMainMenu, showMainMenu, accounts);
+
+                }
+                else //TODO: balance else not valid ask again 2 times, else exit, wie get curreny loop
+                { showMainMenu = true; }
+            }
         }
 
 
@@ -114,7 +128,7 @@ namespace FinanceTracker.Utilities
         #endregion
 
         //Loop bei mehreren Durchläufen einer rekursiven Funktion vorzuziehen
-        public static void GetAccountCurrencyLoop(string name, decimal balance, bool showMainMenu, bool mainExit, List<Account> accounts)
+        public static void GetAccountCurrencyLoop(string name, decimal balance, bool showMainMenu, bool mainExit, List<Classes.Account> accounts)
         {
 
             for (int i = 0; i<3; i++)
@@ -131,7 +145,9 @@ namespace FinanceTracker.Utilities
                     Girokonto account = new(name, balance, currency, Guid.Empty);
 
                     accounts.Add(account);
-                    AccountRepository.AccountRepository.SaveAccounts(accounts);
+                    AccountManager accountManager = new AccountManager(new AccountRepository());
+                    accountManager.SaveAccounts(accounts);
+                    
 
                     View.AccountMenuLoop(account, showMainMenu, mainExit);
                     break;
@@ -159,7 +175,7 @@ namespace FinanceTracker.Utilities
             }
         }
 
-        public static string CreatedAccountMenu(Account account)
+        public static string CreatedAccountMenu(Classes.Account account)
         {
             Console.WriteLine("");
             Console.WriteLine($"Current balance in Account {account.Name} = {account.Balance}");
@@ -170,7 +186,7 @@ namespace FinanceTracker.Utilities
             return entry;
         }
 
-        public static void AccountMenuLoop(Account account, bool showMainMenu, bool mainExit)
+        public static void AccountMenuLoop(Classes.Account account, bool showMainMenu, bool mainExit)
         {
             do
             {
@@ -193,7 +209,7 @@ namespace FinanceTracker.Utilities
 
             } while (!showMainMenu);
         }
-        public static void TransactionMenu(Account account)
+        public static void TransactionMenu(Classes.Account account)
         {
             Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance}.");
             Console.WriteLine("Enter transaction amount");
@@ -216,13 +232,13 @@ namespace FinanceTracker.Utilities
         public static string AfterTransactionMenu()
         {
             Console.WriteLine("1 - To enter another amount");
-            Console.WriteLine("3 - To return to main menu");
+            Console.WriteLine("2 - To return to main menu");
             Console.WriteLine("9 - To exit");
             string entry = Console.ReadLine() ?? String.Empty;
             return entry;
         }
 
-        public static void AfterTransactionMenuLoop(string entry, Account account, bool showMainMenu, bool mainExit)
+        public static void AfterTransactionMenuLoop(string entry, Classes.Account account, bool showMainMenu, bool mainExit)
         {
             do
             {
@@ -233,7 +249,7 @@ namespace FinanceTracker.Utilities
                     case "1":
                         View.TransactionMenu(account);
                         break;
-                    case "3":
+                    case "2":
                         showMainMenu = true;
                         break;
                     case "9":
