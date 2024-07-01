@@ -28,10 +28,8 @@ namespace FinanceTracker.DataAccess
                 string jsonFile = File.ReadAllText(path);
 
                 //ALT: List<Account> accounts = System.Text.Json.JsonSerializer.Deserialize<List<Account>>(jsonFile);
-                List<Account> accounts = JsonConvert.DeserializeObject<List<Account>>(jsonFile);
-
-                //erkennt jetzt nicht, um welchen Kontotyp es sich handelt.
-                // if else mit 'is' machen und als else: Girokonto, da es dem normalen Account gleich, wenn keine Zinsen oder Dispo eingegeben sind
+                //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
+                List<Account> accounts = JsonConvert.DeserializeObject<List<Account>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
 
                 return accounts;
             }
@@ -42,18 +40,6 @@ namespace FinanceTracker.DataAccess
                 return Accounts;
             }
         }
-
-        //falls 'is' nicht funktioniert
-        //public static class Testclass
-        //{
-        //    public static Account RightAccount(Currency currency) => currency switch
-        //    {
-        //        Currency.Bitcoin => Brokerkonto, //Instanziieren
-        //        Currency.Dollar => new Girokonto("da", 1, Currency.EUR, Guid.NewGuid()),
-        //        _ => Girokonto //Instanziieren
-
-        //    };
-        //}
 
         public void SaveAccounts(List<Account> accounts)
         {
@@ -67,7 +53,8 @@ namespace FinanceTracker.DataAccess
             }
 
             //ALT: string jsonFile = System.Text.Json.JsonSerializer.Serialize(accountsDTO);
-            string jsonFile = JsonConvert.SerializeObject(accounts);
+            //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
+            string jsonFile = JsonConvert.SerializeObject(accounts, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
 
             File.WriteAllText(path, jsonFile);
 

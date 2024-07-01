@@ -4,6 +4,7 @@ using FinanceTracker.DataAccess;
 using FinanceTracker.MoneyManagement;
 using System.ComponentModel.Design;
 using System.Security.Principal;
+using System.Xml.Linq;
 
 namespace FinanceTracker.Utilities
 {
@@ -37,17 +38,35 @@ namespace FinanceTracker.Utilities
 
     internal static class View
     {
-        public static string MainMenu(List<Classes.Account> accounts)
+        public static string MainMenu(List<Account> accounts)
         {
             Console.WriteLine("");
             for (int i = 0; i <= accounts.Count-1; i++)
             {
                 Console.WriteLine($"{i+1} - Make a transaction in account: {accounts[i].Name}");
             }
-            Console.WriteLine($"{accounts.Count +1} - Create a new account");
+            Console.WriteLine($"{accounts.Count +1} - Make a transfer between accounts");
+            if (accounts.Count <= 6)
+                Console.WriteLine($"{accounts.Count +2} - Create a new account");
             Console.WriteLine($"9 - Exit ");
             string entry = Console.ReadLine() ?? String.Empty;
             return entry;
+        }
+
+        public static void ShowAccounts(List<Account> accounts)
+        {
+            Console.WriteLine("");
+            for (int i = 0; i < accounts.Count; i++ )
+            {
+                string accountType;
+                if (accounts[i] as Bargeldkonto != null)
+                    accountType = "Bargeldkonto";
+                else if (accounts[i] as Girokonto != null)
+                    accountType = "Girokonto";
+                else
+                    accountType = "";
+                Console.WriteLine($"{i+1}. {accountType}: {accounts[i].Name}, Balance {accounts[i].Balance} {accounts[i].Currency.ToString()}");
+            }
         }
 
         public static void CreateAccount(bool showMainMenu, List<Account> accounts)
@@ -75,35 +94,7 @@ namespace FinanceTracker.Utilities
                     { 
                         string accountTypeString = View.GetNewAccountType();
 
-                        AccountManager accountManager = new AccountManager(new AccountRepository());
-
-                        switch (accountTypeString)
-                        {
-                            case "1":
-                                accounts.Add(new Bargeldkonto(name, balance, currency, Guid.Empty));
-                                accountManager.SaveAccounts(accounts);
-                                break;
-                            case "2":
-                                string overDraftLimit = View.GetOverDraftLimit();
-                                if (Int32.TryParse(overDraftLimit, out int validLimit))
-                                {
-                                    accounts.Add(new Girokonto(name, balance, currency, Guid.Empty, 0.0m));
-                                    accountManager.SaveAccounts(accounts);
-                                    break;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("You failed horribly at this simple task!");
-                                    break;
-                                }
-                                //true konto
-                                //else back
-                                
-                            default:
-                                Console.WriteLine("You failed horribly at this simple task!");
-                                break;
-
-                        }
+                        SaveAccount(accountTypeString, accounts, name, balance, currency);                        
                     }
                     showMainMenu = true;                    
 
@@ -116,6 +107,38 @@ namespace FinanceTracker.Utilities
             }
             else
                 Console.WriteLine("You failed horribly at this simple task!");
+        }
+
+        public static void SaveAccount(string accountTypeString, List<Account> accounts, string name, decimal balance, Currency currency)
+        {
+            AccountManager accountManager = new AccountManager(new AccountRepository());
+            switch (accountTypeString)
+            {
+                case "1":
+                    accounts.Add(new Bargeldkonto(name, balance, currency, Guid.Empty));
+                    accountManager.SaveAccounts(accounts);
+                    break;
+                case "2":
+                    string overDraftLimit = View.GetOverDraftLimit();
+                    if (Int32.TryParse(overDraftLimit, out int validLimit))
+                    {
+                        accounts.Add(new Girokonto(name, balance, currency, Guid.Empty, 0.0m));
+                        accountManager.SaveAccounts(accounts);
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("You failed horribly at this simple task!");
+                        break;
+                    }
+                //true konto
+                //else back
+
+                default:
+                    Console.WriteLine("You failed horribly at this simple task!");
+                    break;
+
+            }
         }
 
         public static string GetOverDraftLimit()
@@ -175,8 +198,6 @@ namespace FinanceTracker.Utilities
             {
                 currency = Mappings.CreateCurrency(currencyString);
 
-
-                //View.AccountMenuLoop(account, showMainMenu, mainExit);
                 return currency;
             }
             return Currency.Error;
@@ -253,36 +274,14 @@ namespace FinanceTracker.Utilities
             Console.WriteLine("1 - To add a transaction");
             Console.WriteLine("9 - To main menu");
             Console.WriteLine("");
-            string entry = Console.ReadLine() ?? String.Empty; //?? String.Empty --> wenn das vor den Fragezeichen null ist, dass verwende diesen Wert = Alternative zum null, muss den gleichen Rückgabewert haben
+            string entry = Console.ReadLine() ?? String.Empty; //?? String.Empty --> wenn das vor den Fragezeichen null ist, dann verwende diesen Wert = Alternative zum null, muss den gleichen Rückgabewert haben
             return entry;
         }
 
-        public static void AccountMenuLoop(Account account, bool showMainMenu, bool mainExit)
-        {
-            do
-            {
-                string entry = View.CreatedAccountMenu(account);
 
-                switch (entry)
-                {
-                    case "1":
-                        View.TransactionMenu(account);
-                        View.AfterTransactionMenuLoop(entry, account, showMainMenu, mainExit);
-                        showMainMenu = true;
-                        break;
-                    case "9":
-                        showMainMenu = true;
-                        break;
-                    default: break;
-                }
-
-                
-
-            } while (!showMainMenu);
-        }
         public static void TransactionMenu(Account account)
         {
-            Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance}.");
+            Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance} {account.Currency}.");
             Console.WriteLine("Enter transaction amount");
             Console.WriteLine("");
             string amountString = Console.ReadLine() ?? String.Empty;
@@ -333,6 +332,62 @@ namespace FinanceTracker.Utilities
                         break;
                 }
             } while (!showMainMenu);
+        }
+
+        public static void TransferMenu(bool showMainMenu, List<Account>accounts)
+        {
+            for (int i = 0; i < accounts.Count; i++) 
+            {
+                Console.WriteLine($"{i+1} - Transfer FROM {accounts[i].Name}, {accounts[i].Balance}{accounts[i].Currency}");
+            }
+            
+            string fromAccountString = Console.ReadLine();
+            
+            if (Int32.TryParse(fromAccountString, out int fromAccRes))
+            { 
+                if (fromAccRes <= accounts.Count)
+                {
+                    Account fromAccount = accounts[fromAccRes - 1];
+                    accounts.Remove(fromAccount);
+
+                    for (int i = 0; i < accounts.Count; i++)
+                    {
+                        Console.WriteLine($"{i + 1} - Transfer TO {accounts[i].Name}, {accounts[i].Balance}{accounts[i].Currency}");
+                    }
+
+                    string toAccountString = Console.ReadLine();
+
+                    if (Int32.TryParse(toAccountString, out int toAccRes))
+                    {
+                        if (toAccRes <= accounts.Count)
+                        {
+                            Account toAccount = accounts[toAccRes - 1];
+                            accounts.Remove(toAccount);
+
+                            //TODO: dispo berücksichtigen
+                            Console.WriteLine($"Enter the amount (xx.xx) (max. {fromAccount.Balance} possible)");
+                            string amountString = Console.ReadLine() ?? String.Empty;
+
+                            if (decimal.TryParse(amountString, out decimal amount))
+                            {
+                                fromAccount.Balance -= amount;
+                                toAccount.Balance += amount;
+
+                                accounts.AddRange([fromAccount, toAccount]);
+
+                                //TODO: transaktionen speichern
+                                AccountManager accountManager = new AccountManager(new AccountRepository());
+                                accountManager.SaveAccounts(accounts);
+                            }
+                            else
+                                Console.WriteLine("You failed horribly at this simple task.");
+                        }
+                    }
+                }
+                
+            }
+
+            else Console.WriteLine("You failed horribly at this simple task.");
         }
     }
 }
