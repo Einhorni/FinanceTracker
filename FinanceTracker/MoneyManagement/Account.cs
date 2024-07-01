@@ -26,12 +26,29 @@ namespace FinanceTracker.Classes
 
     public class Girokonto : Account
     {
-        private bool Zinsen { get; set; }
-        private decimal Zinssatz {  get; set; }
-        private int ZinsIntervall { get; set; }
-        private decimal Dispo {  get; set; }//noch nicht eingebaut
+        //private decimal Zinssatz {  get; set; }
+        public decimal OverdraftLimit {  get; set; }
+        //BankName
+        //IBAN
+        //BIC
+        public Girokonto () { }
+        public Girokonto(string name, decimal balance, Currency currency, Guid id, decimal overdraftLimit)
+        {
 
-        public Girokonto(string name, decimal balance, Currency currency, Guid id)
+            if (id == Guid.Empty)
+                Id = Guid.NewGuid();
+            else Id = id;
+            Name = name;
+            Balance = balance;
+            Currency = currency;
+            OverdraftLimit = overdraftLimit;
+        }
+    }
+
+    public class Bargeldkonto : Account
+    {
+        public Bargeldkonto() { }
+        public Bargeldkonto(string name, decimal balance, Currency currency, Guid id)
         {
 
             if (id == Guid.Empty)
@@ -43,34 +60,55 @@ namespace FinanceTracker.Classes
         }
     }
 
-    public class Tagesgeldkonto : Account
-    {
-        private bool Zinsen { get; set; }
-        private decimal Zinssatz { get; set; }
-        private int ZinsIntervall { get; set; }
-    }
+    //public class Tagesgeldkonto : Account
+    //{
+    //    private decimal Zinssatz { get; set; }
+    //    private int ZinsIntervall { get; set; }
 
-    public class Festgeldkonto : Account
-    {
-        private TimeSpan Laufzeit { get; set; }
-        private bool Zinsen { get; set; }
-        private decimal Zinssatz { get; set; }
-        private int ZinsIntervall { get; set; }
-    }
+    //    public Tagesgeldkonto(string name, decimal balance, Currency currency, Guid id)
+    //    {
 
-    public class Brokerkonto : Account
-    {
-        public decimal AddIncome(decimal amount, decimal kurs)
-        { return Balance + amount; }
+    //        if (id == Guid.Empty)
+    //            Id = Guid.NewGuid();
+    //        else Id = id;
+    //        Name = name;
+    //        Balance = balance;
+    //        Currency = currency;
+    //    }
+    //}
 
-        private decimal SubstractExpense(decimal amount, decimal kurs)
-        { return Balance - amount; }
+    //public class Festgeldkonto : Account
+    //{
+    //    private DateTime Anlagedatum { get; set; }
+    //    private TimeSpan Laufzeit { get; set; }
+    //    private decimal Zinssatz { get; set; }
+    //    private int ZinsIntervall { get; set; }
 
-        //Kursverlauf??
-    }
+    //    public Festgeldkonto(string name, decimal balance, Currency currency, Guid id)
+    //    {
 
-    public class Bargeld : Account
-    { 
-    }
+    //        if (id == Guid.Empty)
+    //            Id = Guid.NewGuid();
+    //        else Id = id;
+    //        Name = name;
+    //        Balance = balance;
+    //        Currency = currency;
+    //    }
+    //}
+
+    //public class Brokerkonto : Account
+    //{
+    //    //Transferkonto
+    //    //Portfolio List[Name;]
+    //    public decimal AddIncome(decimal amount, decimal kurs)
+    //    { return Balance + amount; }
+
+    //    private decimal SubstractExpense(decimal amount, decimal kurs)
+    //    { return Balance - amount; }
+
+    //    //Kursverlauf??
+    //}
+
+
 
 }

@@ -12,7 +12,8 @@ namespace FinanceTracker.Classes
         EUR,
         Dollar,
         Bitcoin,
-        ETF
+        ETF,
+        Error
     }
 
     

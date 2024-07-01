@@ -20,6 +20,7 @@ do
 {
     if (accounts.Count > 0 )
     {
+        Console.WriteLine("");
         foreach ( var account in accounts )
         {
             Console.WriteLine($"Account: {account.Name}, Balance {account.Balance} {account.Currency.ToString()}");
