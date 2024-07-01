@@ -19,7 +19,7 @@ List<Account> accounts = accountManager.Accounts;
 
 do
 {
-    if (accounts.Count > 0)
+    if (accounts.Count > 0) 
         View.ShowAccounts(accounts);
      
     string entry = View.MainMenu(accounts);
@@ -50,7 +50,7 @@ do
         else
         {
             Console.WriteLine("");
-            Console.WriteLine("You failed horribly. Try again");
+            Console.WriteLine("You failed horribly. Try again!");
             Console.WriteLine("");
         }
             
