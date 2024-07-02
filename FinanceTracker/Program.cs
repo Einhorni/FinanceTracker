@@ -1,5 +1,4 @@
-﻿using FinanceTracker.Classes;
-using FinanceTracker.Utilities;
+﻿using FinanceTracker.Utilities;
 using FinanceTracker.DataAccess;
 using FinanceTracker.MoneyManagement;
 
@@ -24,9 +23,7 @@ do
     {
         if (entryAsInt <= accounts.Count)
         {
-            View.TransactionMenu(accounts[entryAsInt - 1], accounts);
-            View.AfterTransactionMenuLoop(entry, accounts[entryAsInt - 1], showMainMenu, mainExit, accounts);
-
+            View.AccountMenu(accounts[entryAsInt - 1], accounts, showMainMenu, mainExit);
             continue;
         }
 

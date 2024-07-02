@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using FinanceTracker.Classes;
+using FinanceTracker.MoneyManagement;
 
 namespace FinanceTracker.DataAccess
 {

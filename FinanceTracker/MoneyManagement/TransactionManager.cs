@@ -1,5 +1,4 @@
-﻿using FinanceTracker.Classes;
-using FinanceTracker.DataAccess;
+﻿using FinanceTracker.DataAccess;
 using FinanceTracker.MoneyManagement;
 using System;
 using System.Collections.Generic;

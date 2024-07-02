@@ -1,8 +1,5 @@
 ﻿using FinanceTracker.DataAccess;
-using FinanceTracker.Classes;
 using FinanceTracker.MoneyManagement;
-using static System.Reflection.Metadata.BlobBuilder;
-using System.Security.Cryptography.X509Certificates;
 
 namespace FinanceTracker.Utilities
 {
@@ -53,6 +50,27 @@ namespace FinanceTracker.Utilities
             }
             return category;
         }
+
+        public static string MapCategoryToString(Category category)
+        {
+            string categoryString = string.Empty;
+            switch (category)
+            {
+                case Category.ArtSupplies: categoryString = "ArtSupplies"; break;
+                case Category.Books: categoryString = "Books"; break;
+                case Category.Fees: categoryString = "Fees"; break;
+                case Category.Groceries: categoryString = "Groceries"; break;
+                case Category.Household: categoryString = "Household"; break;
+                case Category.Insurance: categoryString = "Insurance"; break;
+                case Category.OtherHobbies: categoryString = "Other Hobbies"; break;
+                case Category.PersonalHealth: categoryString = "Personal Health"; break;
+                case Category.StreamAndTvAndPhone: categoryString = "Strea, Tv and Phone"; break;
+                case Category.Taxes: categoryString = "Taxes"; break;
+                case Category.VehicleAndFuel: categoryString = "Vehicle and Fuel"; break;
+                case Category.Income: categoryString = "Income"; break;
+            }
+            return categoryString;
+        }
     }
 
     internal static class View
@@ -62,14 +80,86 @@ namespace FinanceTracker.Utilities
             Console.WriteLine("");
             for (int i = 0; i <= accounts.Count-1; i++)
             {
-                Console.WriteLine($"{i+1} - Make a transaction in account: {accounts[i].Name}");
+                Console.WriteLine($"{i + 1} - Show account: {accounts[i].Name}");
             }
             Console.WriteLine($"{accounts.Count +1} - Make a transfer between accounts");
             if (accounts.Count <= 6)
                 Console.WriteLine($"{accounts.Count +2} - Create a new account");
             Console.WriteLine($"9 - Exit ");
-            string entry = Console.ReadLine() ?? String.Empty;
-            return entry;
+            Console.WriteLine("");
+            return Console.ReadLine() ?? String.Empty;
+        }
+
+        public static void ShowTransactions (Account account, List<MoneyManagement.Transaction> transactions)
+        {
+            List<MoneyManagement.Transaction> accountTransactions =
+                    transactions
+                        .Where(t => t.AccountId == account.Id)
+                        .OrderByDescending(t => t.Date)
+                        .Take(10)
+                        .ToList();
+
+            Console.WriteLine($"");
+            Console.WriteLine($"Last transactions:");
+            foreach (MoneyManagement.Transaction transaction in accountTransactions)
+            {
+                string stringCategories = Mappings.MapCategoryToString(transaction.Category);
+                string date = transaction.Date.ToShortDateString();
+
+                if (transaction.Amount > 0.0m)
+                    Console.WriteLine($"{date}: +{transaction.Amount}, {transaction.Category}");
+                else
+                    Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category}");
+            }
+        }
+
+        public static void AccountMenu(Account account, List<Account> accounts, bool showMainMenu, bool mainExit)
+        {
+            MoneyManagement.TransactionManager transactionManager = new MoneyManagement.TransactionManager(new TransactionRepository());
+            var transactions = transactionManager.LoadTransactions();
+
+            //TODO: neue function
+            //if there are any transactions of this account list max 10 of them
+
+            ShowTransactions(account, transactions);
+
+            //List<MoneyManagement.Transaction> accountTransactions = 
+            //        transactions
+            //            .Where(t => t.AccountId == account.Id)
+            //            .OrderByDescending(t => t.Date)
+            //            .Take(10)
+            //            .ToList();
+
+            //Console.WriteLine($"");
+            //Console.WriteLine($"Last transactions:");
+            //foreach (MoneyManagement.Transaction transaction in accountTransactions)
+            //{
+            //    string stringCategories = Mappings.MapCategoryToString(transaction.Category);
+            //    string date = transaction.Date.ToShortDateString();
+
+            //    if (transaction.Amount > 0.0m)
+            //        Console.WriteLine($"{date}: +{transaction.Amount}, {transaction.Category}");
+            //    else
+            //        Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category}");
+            //}
+
+            //give the options to make a transation
+            Console.WriteLine("");
+            Console.WriteLine("1 - Make a transaction");
+            Console.WriteLine("9 - Main Menu");
+            string entry = Console.ReadLine();
+
+            if (entry == "1")
+            {
+                View.TransactionMenu(account, accounts);
+                View.AfterTransactionMenuLoop(entry, account, showMainMenu, mainExit, accounts);
+            }
+            else if (entry == "9") { }
+            else
+            { Console.WriteLine("You failed horribly at this simple task!"); }
+
+
+
         }
 
         public static void ShowAccounts(List<Account> accounts)
@@ -276,10 +366,10 @@ namespace FinanceTracker.Utilities
                     IrregularTransaction newTransaction = new(result, category, account.Id); 
                     account.Balance = account.AddIncome(result);
 
-                    TransactionManager transactionManager = new TransactionManager(new TransactionRepository());
+                    MoneyManagement.TransactionManager transactionManager = new (new TransactionRepository());
                     transactionManager.SaveTransaction(newTransaction);
 
-                    AccountManager accountManager = new AccountManager(new AccountRepository());
+                    AccountManager accountManager = new (new AccountRepository());
                     accountManager.SaveAccounts(accounts);
                 }
                 else
@@ -300,8 +390,7 @@ namespace FinanceTracker.Utilities
         {
             Console.WriteLine("");
             Console.WriteLine("1 - To enter another amount");
-            Console.WriteLine("2 - To return to main menu");
-            Console.WriteLine("9 - To exit");
+            Console.WriteLine("9 - To return to main menu");
             Console.WriteLine("");
             string entry = Console.ReadLine() ?? String.Empty;
             return entry;
@@ -309,8 +398,12 @@ namespace FinanceTracker.Utilities
 
         public static void AfterTransactionMenuLoop(string entry, Account account, bool showMainMenu, bool mainExit, List<Account>accounts)
         {
+            MoneyManagement.TransactionManager transactionManager = new MoneyManagement.TransactionManager(new TransactionRepository());
+            var transactions = transactionManager.LoadTransactions();
+            
             do
             {
+                ShowTransactions(account, transactions);
                 entry = View.AfterTransactionMenu();
 
                 switch (entry)
@@ -318,14 +411,11 @@ namespace FinanceTracker.Utilities
                     case "1":
                         View.TransactionMenu(account, accounts);
                         break;
-                    case "2":
-                        showMainMenu = true;
-                        break;
                     case "9":
                         showMainMenu = true;
-                        mainExit = true;
                         break;
                     default:
+                        Console.WriteLine("You failed horribly at this simple task!");
                         break;
                 }
             } while (!showMainMenu);

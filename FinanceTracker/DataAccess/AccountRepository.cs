@@ -1,4 +1,4 @@
-﻿using FinanceTracker.Classes;
+﻿using FinanceTracker.MoneyManagement;
 using Newtonsoft.Json;
 
 namespace FinanceTracker.DataAccess

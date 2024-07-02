@@ -1,6 +1,6 @@
 ﻿using FinanceTracker.MoneyManagement;
 
-namespace FinanceTracker.Classes
+namespace FinanceTracker.MoneyManagement
 {
     public class Transaction
     {

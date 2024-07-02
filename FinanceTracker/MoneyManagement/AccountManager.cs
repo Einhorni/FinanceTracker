@@ -1,4 +1,4 @@
-﻿using FinanceTracker.Classes;
+﻿using FinanceTracker.MoneyManagement;
 using FinanceTracker.DataAccess;
 
 namespace FinanceTracker.MoneyManagement
