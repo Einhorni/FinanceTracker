@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using FinanceTracker.Classes;
+﻿using FinanceTracker.Classes;
 using Newtonsoft.Json;
 
 namespace FinanceTracker.DataAccess
@@ -14,7 +7,8 @@ namespace FinanceTracker.DataAccess
 
     internal class AccountRepository : IAccountRepository
     {
-
+        //string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        //string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         public static string directory = @"C:\Progammieren\FinanceTracker\FinanceTracker\SavaData\";
         public static string file = "accounts.txt";
 

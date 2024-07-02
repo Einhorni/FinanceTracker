@@ -1,65 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FinanceTracker.MoneyManagement;
 
 namespace FinanceTracker.Classes
 {
     public class Transaction
     {
-        Guid Account {  get; set; }
-        decimal Amount { get; set; }
-        string Title { get; set; } = String.Empty;
-        DateTime Date { get; set; }
-        string Category { get; set; } = String.Empty;
+        public Guid TransactionId {  get; set; }
+        public decimal Amount { get; set; }
+        public string? Title { get; set; }
+        public DateTime Date { get; set; }
+        public Category Category { get; set; }
+        public Guid AccountId { get; set; }
     }
 
 
-    class Irregular : Transaction
+    public class IrregularTransaction : Transaction
     {
-        public Irregular (decimal Amount, string Title, string Category)
+        public IrregularTransaction(decimal amount, Category category, Guid currentAccountId)
         {
-            Guid account = Guid.NewGuid();
-            decimal amount = Amount;
-            string title = Title;
-            DateTime date = DateTime.Now;
-            string category = Category;
+            TransactionId = Guid.NewGuid();
+            Amount = amount;
+            Date = DateTime.Now;
+            Category = category;
+            AccountId = currentAccountId;
         }
     }
 
-    class Regular : Transaction
-    {
-        public decimal Amount { get; set; }
-        public string Title { get; set; } = String.Empty;
-        public DateTime Date { get; set; }
-        public int Interval { get; set; }
-        public string Category { get; set; } = String.Empty;
+    //class Regular : Transaction
+    //{
+    //    public decimal Amount { get; set; }
+    //    public string Title { get; set; } = String.Empty;
+    //    public DateTime Date { get; set; }
+    //    public int Interval { get; set; }
+    //    public string Category { get; set; } = String.Empty;
 
-        //Intervall: Timespan / Date?
-    }
+    //    //Intervall: Timespan / Date?
+    //}
 
 
-    class RegularBroker : Transaction
-    {
-        public decimal Amount { get; set; }
-        public decimal Kurs { get; set; }
-        public string Title { get; set; } = String.Empty;
-        public DateTime Date { get; set; }
-        public string Category { get; set; } = String.Empty;
+    //class RegularBroker : Transaction
+    //{
+    //    public decimal Amount { get; set; }
+    //    public decimal Kurs { get; set; }
+    //    public string Title { get; set; } = String.Empty;
+    //    public DateTime Date { get; set; }
+    //    public string Category { get; set; } = String.Empty;
 
-    }
+    //}
 
-    class IrregularBroker : Transaction
-    {
-        public decimal Amount { get; set; }
-        public decimal Kurs { get; set; }
-        public string Title { get; set; } = String.Empty;
-        public DateTime Date { get; set; }
-        public string Category { get; set; } = String.Empty;
+    //class IrregularBroker : Transaction
+    //{
+    //    public decimal Amount { get; set; }
+    //    public decimal Kurs { get; set; }
+    //    public string Title { get; set; } = String.Empty;
+    //    public DateTime Date { get; set; }
+    //    public string Category { get; set; } = String.Empty;
 
-        public int Intervall { get; set; }//Monate: Berechnung dann woanders Timespan / Date? (+x Monate)
-    }
+    //    public int Intervall { get; set; }//Monate: Berechnung dann woanders Timespan / Date? (+x Monate)
+    //}
 
 
 }

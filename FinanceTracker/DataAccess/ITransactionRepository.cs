@@ -2,9 +2,9 @@
 
 namespace FinanceTracker.DataAccess
 {
-    internal interface ITransactionInterface
+    public interface ITransactionRepository
     {
         public List<Transaction> LoadTransactions();
-        public void SaveTransactions(List<Transaction> transactions);
+        public void SaveTransaction(Transaction transaction);
     }
 }

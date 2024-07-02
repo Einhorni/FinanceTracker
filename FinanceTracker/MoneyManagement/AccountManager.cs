@@ -1,10 +1,5 @@
 ﻿using FinanceTracker.Classes;
 using FinanceTracker.DataAccess;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinanceTracker.MoneyManagement
 {
@@ -12,23 +7,23 @@ namespace FinanceTracker.MoneyManagement
     {
         private readonly IAccountRepository _accountRepository;
         public List<Account> Accounts;
-        public Account Account;
+        //public Account Account;
 
-        public AccountManager(IAccountRepository accountRepository, Guid optional = new Guid())
+        public AccountManager(IAccountRepository accountRepository, Guid optional = new Guid()) //to give in an optional Guid parameter
         {
             var guidIsEmpty = optional == Guid.Empty;
 
             _accountRepository = accountRepository;
             Accounts = LoadAccounts();
 
-            if (!guidIsEmpty)
-            {
-                Account = LoadAccount(optional);
-            }
+            //if (!guidIsEmpty)
+            //{
+            //    Account = LoadAccountById(optional);
+            //}
         }
 
-        public Account LoadAccount(Guid id) 
-        { return _accountRepository.LoadAccountById(id); }
+        //public Account LoadAccountById(Guid id) 
+        //{ return _accountRepository.LoadAccountById(id); }
         
         public List<Account> LoadAccounts() 
         { return _accountRepository.LoadAccounts(); }

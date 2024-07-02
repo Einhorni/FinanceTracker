@@ -1,17 +1,15 @@
 ﻿using FinanceTracker.DataAccess;
 using FinanceTracker.Classes;
-using FinanceTracker.DataAccess;
 using FinanceTracker.MoneyManagement;
-using System.ComponentModel.Design;
-using System.Security.Principal;
-using System.Xml.Linq;
+using static System.Reflection.Metadata.BlobBuilder;
+using System.Security.Cryptography.X509Certificates;
 
 namespace FinanceTracker.Utilities
 {
 
     internal class Mappings
     {
-        public static Currency CreateCurrency(string currencyString)
+        public static Currency MapToCurrency(string currencyString)
         {
             Currency currency = new();
             switch (currencyString)
@@ -33,6 +31,27 @@ namespace FinanceTracker.Utilities
                     break;
             }
             return currency;
+        }
+
+        public static Category MapToCategory(string categoryString)
+        {
+            Category category = Category.Empty;
+            switch (categoryString)
+            {
+                case "a": category = Category.ArtSupplies; break;
+                case "b": category = Category.Books; break;
+                case "f": category = Category.Fees; break;
+                case "g": category = Category.Groceries; break;
+                case "h": category = Category.Household; break;
+                case "i": category = Category.Insurance; break;
+                case "o": category = Category.OtherHobbies; break;
+                case "p": category = Category.PersonalHealth; break;
+                case "s": category = Category.StreamAndTvAndPhone; break;
+                case "t": category = Category.Taxes; break;
+                case "v": category = Category.VehicleAndFuel; break;
+                case "+": category = Category.Income; break;
+            }
+            return category;
         }
     }
 
@@ -69,12 +88,10 @@ namespace FinanceTracker.Utilities
             }
         }
 
-        public static void CreateAccount(bool showMainMenu, List<Account> accounts)
+        public static void CreateAccountMenu(bool showMainMenu, List<Account> accounts)
         {
 
             string name = View.GetAccoutName();
-
-            //TODO: get account type: giro, tages, fest, bar
             
             if (name != "9" && name != "")
             {
@@ -196,112 +213,92 @@ namespace FinanceTracker.Utilities
 
             if (currencyString == "b" || currencyString == "d" || currencyString == "e" || currencyString == "f")
             {
-                currency = Mappings.CreateCurrency(currencyString);
+                currency = Mappings.MapToCurrency(currencyString);
 
                 return currency;
             }
             return Currency.Error;
         }
 
-        #region recursion
-        //rekursion in dem Fall okay, da sie nur 2 mal aufgerufen wird, ansonten in C# eher Loops verwenden
-        //public static void GetAccountCurrencyLoopRec(string name, decimal balance, bool exiter, bool exiter2, bool firstmain, int loopCounter)
-        //{
-        //    string currencyString = Views.GetAccoutCurreny();
-
-        //    Currency currency;
-
-        //    //2 mal falsch eingeben -> Möglichkeit nochmal eingeben, danach Programmende
-
-
-        //    if (currencyString == "b" || currencyString == "d" || currencyString == "e" || currencyString == "f")
-        //    {
-        //        currency = Account.CreateCurrency(currencyString);
-        //        Girokonto account = new(name, balance, currency);
-
-        //        Views.AccountMenuLoop(account, exiter, exiter2, firstmain);
-        //    }
-
-        //    else
-        //    {
-        //        loopCounter++;
-        //        if (loopCounter > 2) 
-        //            firstmain = true;
-        //        else
-        //            GetAccountCurrencyLoopRec( name, balance,  exiter,  exiter2,  firstmain, loopCounter);
-        //    }    
-        //}
-        #endregion
-
-        //Loop bei mehreren Durchläufen einer rekursiven Funktion vorzuziehen
-        //public static void GetAccountCurrencyLoop(string name, decimal balance, bool showMainMenu, bool mainExit, List<Account> accounts)
-        //{
-        //    for (int i = 0; i<3; i++)
-        //    {
-                
-        //        if ()
-        //        {
-        //            
-        //        }
-
-        //        else
-        //        {
-        //            if (i ==2)
-        //            {
-        //                Console.WriteLine("");
-        //                Console.WriteLine("To many false entries. You will be directed back to the main menu");
-        //                Console.WriteLine("");
-        //                Console.WriteLine("");
-        //                continue;
-        //            }
-        //            else
-        //            {
-        //                Console.WriteLine("False entry. Try again.");
-        //                Console.WriteLine("");
-        //                Console.WriteLine("");
-        //                continue;
-        //            }                   
-        //        }
-        //    }
-        //}
-
-
-        public static string CreatedAccountMenu(Account account)
+        
+        public static string GetCategoryString()
         {
+            Console.WriteLine("Please choose a category:");
             Console.WriteLine("");
-            Console.WriteLine($"Current balance in Account {account.Name} = {account.Balance}");
+            Console.WriteLine("+ for an Income");
+            Console.WriteLine("A for Art Supplies");
+            Console.WriteLine("B for Books");
+            Console.WriteLine("C for Clothes");
+            Console.WriteLine("F for Fees");
+            Console.WriteLine("G for Groceries");
+            Console.WriteLine("H for Household");
+            Console.WriteLine("I for Insurace");
+            Console.WriteLine("O for Other Hobbies");
+            Console.WriteLine("P for Personal Health");
+            Console.WriteLine("S for Stram, Tv and Phone");
+            Console.WriteLine("T for Taxes");
+            Console.WriteLine("V for Vehicle and Fuel");
             Console.WriteLine("");
-            Console.WriteLine("1 - To add a transaction");
-            Console.WriteLine("9 - To main menu");
-            Console.WriteLine("");
-            string entry = Console.ReadLine() ?? String.Empty; //?? String.Empty --> wenn das vor den Fragezeichen null ist, dann verwende diesen Wert = Alternative zum null, muss den gleichen Rückgabewert haben
-            return entry;
+            string categoryString = Console.ReadLine() ?? String.Empty;
+            return categoryString;
         }
 
-
-        public static void TransactionMenu(Account account)
+            public static void TransactionMenu(Account account, List<Account> accounts)
         {
             Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance} {account.Currency}.");
-            Console.WriteLine("Enter transaction amount");
+            Console.WriteLine("Enter transaction amount. Put a \"-\" in front of the amount if it's an expense.");
             Console.WriteLine("");
             string amountString = Console.ReadLine() ?? String.Empty;
 
 
-            if (decimal.TryParse(amountString, out decimal result)) //!!!!der name hinter dem out wird nach dem tryparse verwendet und muss vor nicht initialisiert werden
+            if (decimal.TryParse(amountString, out decimal result)) 
             {
-                Irregular newTransaction = new(result, "new", "ny");
-                account.Balance = account.AddIncome(result);
+                string categoryString = GetCategoryString();
+
+                if (
+                        categoryString.ToUpperInvariant() == "A" ||
+                        categoryString.ToUpperInvariant() == "B" ||
+                        categoryString.ToUpperInvariant() == "C" ||
+                        categoryString.ToUpperInvariant() == "F" ||
+                        categoryString.ToUpperInvariant() == "G" ||
+                        categoryString.ToUpperInvariant() == "H" ||
+                        categoryString.ToUpperInvariant() == "I" ||
+                        categoryString.ToUpperInvariant() == "O" ||
+                        categoryString.ToUpperInvariant() == "P" ||
+                        categoryString.ToUpperInvariant() == "S" ||
+                        categoryString.ToUpperInvariant() == "T" ||
+                        categoryString.ToUpperInvariant() == "V" ||
+                        categoryString.ToUpperInvariant() == "+"
+                    )
+                {
+                    Category category = Mappings.MapToCategory (categoryString);
+                    
+                    IrregularTransaction newTransaction = new(result, category, account.Id); 
+                    account.Balance = account.AddIncome(result);
+
+                    TransactionManager transactionManager = new TransactionManager(new TransactionRepository());
+                    transactionManager.SaveTransaction(newTransaction);
+
+                    AccountManager accountManager = new AccountManager(new AccountRepository());
+                    accountManager.SaveAccounts(accounts);
+                }
+                else
+                    Console.WriteLine("You failed horribly at this simple task!");
             }
                     
             else
-                Console.WriteLine("Invalid entry");
+                Console.WriteLine("You failed horribly at this simple task!");
 
+            Console.WriteLine("");
             Console.WriteLine($"Current balance = {account.Balance}");
-
+            Console.WriteLine("");
         }
+
+        
 
         public static string AfterTransactionMenu()
         {
+            Console.WriteLine("");
             Console.WriteLine("1 - To enter another amount");
             Console.WriteLine("2 - To return to main menu");
             Console.WriteLine("9 - To exit");
@@ -310,7 +307,7 @@ namespace FinanceTracker.Utilities
             return entry;
         }
 
-        public static void AfterTransactionMenuLoop(string entry, Account account, bool showMainMenu, bool mainExit)
+        public static void AfterTransactionMenuLoop(string entry, Account account, bool showMainMenu, bool mainExit, List<Account>accounts)
         {
             do
             {
@@ -319,7 +316,7 @@ namespace FinanceTracker.Utilities
                 switch (entry)
                 {
                     case "1":
-                        View.TransactionMenu(account);
+                        View.TransactionMenu(account, accounts);
                         break;
                     case "2":
                         showMainMenu = true;
