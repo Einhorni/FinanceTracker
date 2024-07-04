@@ -5,13 +5,12 @@ namespace FinanceTracker.DataAccess
 {
     public class TransactionRepository : ITransactionRepository
     {
+        //for production use:
         //string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         //string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         private static string directory =  @"C:\Progammieren\FinanceTracker\FinanceTracker\SavaData\";
         private static string file = "transactions.txt";
-
         public static string path = $"{directory}{file}";
-        //bool fileExists = File.Exists(path);
 
         public List<Transaction> LoadTransactions()
         { 
@@ -35,22 +34,6 @@ namespace FinanceTracker.DataAccess
             }
         }
 
-        //private void SaveTransactions(List<Transaction> transactions)
-        //{
-        //    bool fileExists = File.Exists(path);
-
-        //    if (!fileExists)
-        //    {
-        //        if (!Directory.Exists(directory))
-        //            Directory.CreateDirectory(directory);
-        //    }
-
-        //    string jsonFile = JsonConvert.SerializeObject(transactions, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
-
-        //    File.WriteAllText(path, jsonFile);
-
-        //    return;
-        //}
 
         public void SaveTransaction(Transaction transaction)
         {

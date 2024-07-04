@@ -7,6 +7,7 @@ namespace FinanceTracker.DataAccess
 
     internal class AccountRepository : IAccountRepository
     {
+        //for production use:
         //string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         //string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         public static string directory = @"C:\Progammieren\FinanceTracker\FinanceTracker\SavaData\";
@@ -54,17 +55,5 @@ namespace FinanceTracker.DataAccess
 
             return;
         }
-
-        public Account LoadAccountById(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        //public void SaveAccountById(Account account)
-        //{
-        //    throw new NotImplementedException();
-        //}
-    }
-
-    
+    }  
 }

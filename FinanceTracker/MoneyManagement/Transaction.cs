@@ -25,6 +25,7 @@ namespace FinanceTracker.MoneyManagement
         }
     }
 
+    #region for later use
     //class Regular : Transaction
     //{
     //    public decimal Amount { get; set; }
@@ -57,6 +58,6 @@ namespace FinanceTracker.MoneyManagement
 
     //    public int Intervall { get; set; }//Monate: Berechnung dann woanders Timespan / Date? (+x Monate)
     //}
-
+    #endregion
 
 }

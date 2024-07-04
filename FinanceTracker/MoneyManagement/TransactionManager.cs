@@ -24,11 +24,6 @@ namespace FinanceTracker.MoneyManagement
             return _transactionRepository.LoadTransactions();
         }
 
-        //public void SaveTransactions(List<Transaction> transactions)
-        //{
-        //    _transactionRepository.SaveTransactions(transactions);
-        //}
-
         public void SaveTransaction(Transaction transaction)
         {
             _transactionRepository.SaveTransaction(transaction);

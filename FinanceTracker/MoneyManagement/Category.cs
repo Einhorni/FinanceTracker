@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace FinanceTracker.MoneyManagement
 {
+    //better store in db
     public enum Category
     {
         ArtSupplies,
