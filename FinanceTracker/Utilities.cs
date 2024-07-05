@@ -387,8 +387,11 @@ namespace FinanceTracker.Utilities
 
                             if (decimal.TryParse(amountString, out decimal amount))
                             {
-                                fromAccount.CalculateNewBalanceSendingAccount(toAccount.Currency, amount);
-                                toAccount.CalculateNewBalanceReceivingAccount(fromAccount.Currency, amount);
+                                //fromAccount.CalculateNewBalanceSendingAccount(toAccount.Currency, amount);
+                                //toAccount.CalculateNewBalanceReceivingAccount(fromAccount.Currency, amount);
+
+                                fromAccount.Balance =- amount;
+                                toAccount.Balance =+ amount;
 
                                 //add accounts with new balance
                                 accounts.AddRange([fromAccount, toAccount]);

@@ -17,83 +17,83 @@
 
 
         //transfer between 2 accounts
-        public decimal CalculateNewBalanceSendingAccount(Currency currencyTo, decimal amount)
-        {
-            Balance = Balance - amount - GetTransferFee(currencyTo, amount); 
-            return Balance;
-        }
+        //public decimal CalculateNewBalanceSendingAccount(Currency currencyTo, decimal amount)
+        //{
+        //    Balance = Balance - amount - GetTransferFee(currencyTo, amount); 
+        //    return Balance;
+        //}
 
         //transfer between 2 accounts
-        public decimal CalculateNewBalanceReceivingAccount(Currency currencyTo, decimal amountFromSender)
-        {
-            decimal amount = CalculateAmountReveivingAccount(currencyTo, amountFromSender); 
-            Balance = Balance + amountFromSender;
-            return Balance;
-        }
+        //public decimal CalculateNewBalanceReceivingAccount(Currency currencyTo, decimal amountFromSender)
+        //{
+        //    decimal amount = CalculateAmountReveivingAccount(currencyTo, amountFromSender); 
+        //    Balance = Balance + amountFromSender;
+        //    return Balance;
+        //}
 
         //currency conversion
-        public decimal CalculateAmountReveivingAccount(Currency currencyTo, decimal amount)
-        {
-            decimal receivingAmout = default;
-            var exchangeRates = new MockCurrencyExchangeRates();
-            if (Currency == Currency.EUR)
-            switch (Currency)
-            {
-                case Currency.EUR:
-                    switch (currencyTo)
-                    {
-                        case Currency.Dollar:
-                            return receivingAmout = exchangeRates.euroToDollar * amount;
-                        case Currency.Bitcoin:
-                            return receivingAmout = exchangeRates.euroToBitcoin * amount;
-                        case Currency.ETF:
-                            return receivingAmout = exchangeRates.euroToEtf * amount;
-                        }
-                    break;
-                case Currency.Dollar:
-                    switch (currencyTo)
-                    {
-                        case Currency.EUR:
-                            return receivingAmout = exchangeRates.dollarToEuro * amount;
-                        case Currency.Bitcoin:
-                            return receivingAmout = exchangeRates.dollarToBitcoin * amount;
-                        case Currency.ETF:
-                            return receivingAmout = exchangeRates.dollarToEtf * amount;
-                        }
-                    break;
-                case Currency.ETF:
-                    switch (currencyTo)
-                    {
-                        case Currency.EUR:
-                            return receivingAmout = exchangeRates.etfToEuro * amount;
-                        case Currency.Bitcoin:
-                            return receivingAmout = exchangeRates.etfToBitcoin * amount;
-                        case Currency.Dollar:
-                            return receivingAmout = exchangeRates.etfToDollar * amount;
-                    }
-                    break;
-                case Currency.Bitcoin:
-                    switch (currencyTo)
-                    {
-                        case Currency.EUR:
-                            return receivingAmout = exchangeRates.bitcoinToEuro * amount;
-                        case Currency.Dollar:
-                            return receivingAmout = exchangeRates.bitcoinToDollar * amount;
-                        case Currency.ETF:
-                            return receivingAmout = exchangeRates.bitcoinToEtf* amount;
-                    }
-                    break;
-                default: break;
-            }
-            return receivingAmout;
-        }
+        //public decimal CalculateAmountReveivingAccount(Currency currencyTo, decimal amount)
+        //{
+        //    decimal receivingAmout = default;
+        //    var exchangeRates = new MockCurrencyExchangeRates();
+        //    if (Currency == Currency.EUR)
+        //    switch (Currency)
+        //    {
+        //        case Currency.EUR:
+        //            switch (currencyTo)
+        //            {
+        //                case Currency.Dollar:
+        //                    return receivingAmout = exchangeRates.euroToDollar * amount;
+        //                case Currency.Bitcoin:
+        //                    return receivingAmout = exchangeRates.euroToBitcoin * amount;
+        //                case Currency.ETF:
+        //                    return receivingAmout = exchangeRates.euroToEtf * amount;
+        //                }
+        //            break;
+        //        case Currency.Dollar:
+        //            switch (currencyTo)
+        //            {
+        //                case Currency.EUR:
+        //                    return receivingAmout = exchangeRates.dollarToEuro * amount;
+        //                case Currency.Bitcoin:
+        //                    return receivingAmout = exchangeRates.dollarToBitcoin * amount;
+        //                case Currency.ETF:
+        //                    return receivingAmout = exchangeRates.dollarToEtf * amount;
+        //                }
+        //            break;
+        //        case Currency.ETF:
+        //            switch (currencyTo)
+        //            {
+        //                case Currency.EUR:
+        //                    return receivingAmout = exchangeRates.etfToEuro * amount;
+        //                case Currency.Bitcoin:
+        //                    return receivingAmout = exchangeRates.etfToBitcoin * amount;
+        //                case Currency.Dollar:
+        //                    return receivingAmout = exchangeRates.etfToDollar * amount;
+        //            }
+        //            break;
+        //        case Currency.Bitcoin:
+        //            switch (currencyTo)
+        //            {
+        //                case Currency.EUR:
+        //                    return receivingAmout = exchangeRates.bitcoinToEuro * amount;
+        //                case Currency.Dollar:
+        //                    return receivingAmout = exchangeRates.bitcoinToDollar * amount;
+        //                case Currency.ETF:
+        //                    return receivingAmout = exchangeRates.bitcoinToEtf* amount;
+        //            }
+        //            break;
+        //        default: break;
+        //    }
+        //    return receivingAmout;
+        //}
 
-        public decimal GetTransferFee(Currency currencyTo, decimal amount)
-        {
-            if (Currency == currencyTo) return 0.0m;
-            else
-                return (amount * 0.01m);
-        }
+        //public decimal GetTransferFee(Currency currencyTo, decimal amount)
+        //{
+        //    if (Currency == currencyTo) return 0.0m;
+        //    else
+        //        return (amount * 0.01m);
+        //}
 
         //for later use
         //public decimal SubstractExpense(decimal amount)
