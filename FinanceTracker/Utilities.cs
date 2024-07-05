@@ -1,5 +1,7 @@
 ﻿using FinanceTracker.DataAccess;
 using FinanceTracker.MoneyManagement;
+using MoneyManagement;
+using MoneyManagement.Models;
 
 namespace FinanceTracker.Utilities
 {
@@ -20,9 +22,11 @@ namespace FinanceTracker.Utilities
             return Console.ReadLine() ?? String.Empty;
         }
 
-        public static void ShowTransactions (Account account, List<MoneyManagement.Transaction> transactions)
+        public static void ShowTransactions (Account account, List<Transaction> transactions)
         {
-            List<MoneyManagement.Transaction> accountTransactions =
+            
+
+            List<Transaction> accountTransactions =
                     transactions
                         .Where(t => t.AccountId == account.Id)
                         .OrderByDescending(t => t.Date)
@@ -31,7 +35,7 @@ namespace FinanceTracker.Utilities
 
             Console.WriteLine($"");
             Console.WriteLine($"Last transactions:");
-            foreach (MoneyManagement.Transaction transaction in accountTransactions)
+            foreach (Transaction transaction in accountTransactions)
             {
                 string stringCategories = Mappings.MapCategoryToString(transaction.Category);
                 string date = transaction.Date.ToShortDateString();
@@ -45,35 +49,11 @@ namespace FinanceTracker.Utilities
 
         public static void AccountMenu(Account account, List<Account> accounts, bool showMainMenu, bool mainExit)
         {
-            MoneyManagement.TransactionManager transactionManager = new MoneyManagement.TransactionManager(new TransactionRepository());
-            var transactions = transactionManager.LoadTransactions();
-
-            //TODO: neue function
-            //if there are any transactions of this account list max 10 of them
+            MoneyManagementService moneyManager = new MoneyManagementService(new TransactionRepository());
+            var transactions = moneyManager.LoadTransactions();
 
             ShowTransactions(account, transactions);
 
-            //List<MoneyManagement.Transaction> accountTransactions = 
-            //        transactions
-            //            .Where(t => t.AccountId == account.Id)
-            //            .OrderByDescending(t => t.Date)
-            //            .Take(10)
-            //            .ToList();
-
-            //Console.WriteLine($"");
-            //Console.WriteLine($"Last transactions:");
-            //foreach (MoneyManagement.Transaction transaction in accountTransactions)
-            //{
-            //    string stringCategories = Mappings.MapCategoryToString(transaction.Category);
-            //    string date = transaction.Date.ToShortDateString();
-
-            //    if (transaction.Amount > 0.0m)
-            //        Console.WriteLine($"{date}: +{transaction.Amount}, {transaction.Category}");
-            //    else
-            //        Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category}");
-            //}
-
-            //give the options to make a transation
             Console.WriteLine("");
             Console.WriteLine("1 - Make a transaction");
             Console.WriteLine("9 - Main Menu");
@@ -120,8 +100,8 @@ namespace FinanceTracker.Utilities
                 if (decimal.TryParse(balanceString, out decimal balance))
                 {
 
-                    Currency currency = View.GetAccoutCurreny();
-                    if (currency == Currency.Error)
+                    MockCurrency currency = View.GetAccoutCurreny();
+                    if (currency == MockCurrency.Error)
                     {
                         Console.WriteLine("You failed horribly at this simple task!");
                         showMainMenu = true;
@@ -146,9 +126,9 @@ namespace FinanceTracker.Utilities
                 Console.WriteLine("You failed horribly at this simple task!");
         }
 
-        public static void SaveAccount(string accountTypeString, List<Account> accounts, string name, decimal balance, Currency currency)
+        public static void SaveAccount(string accountTypeString, List<Account> accounts, string name, decimal balance, MockCurrency currency)
         {
-            AccountManager accountManager = new AccountManager(new AccountRepository());
+            MoneyManagementService accountManager = new MoneyManagementService(new AccountRepository());
             switch (accountTypeString)
             {
                 case "1":
@@ -218,7 +198,7 @@ namespace FinanceTracker.Utilities
             string balanceString = Console.ReadLine() ?? String.Empty;
             return balanceString;
         }
-        public static Currency GetAccoutCurreny()
+        public static MockCurrency GetAccoutCurreny()
         {
             Console.WriteLine("");
             Console.WriteLine("Enter a currency:");
@@ -229,7 +209,7 @@ namespace FinanceTracker.Utilities
             Console.WriteLine("");
             string currencyString = Console.ReadLine() ?? String.Empty;
 
-            Currency currency;
+            MockCurrency currency;
 
             if (currencyString == "b" || currencyString == "d" || currencyString == "e" || currencyString == "f")
             {
@@ -237,7 +217,7 @@ namespace FinanceTracker.Utilities
 
                 return currency;
             }
-            return Currency.Error;
+            return MockCurrency.Error;
         }
 
         
@@ -265,6 +245,7 @@ namespace FinanceTracker.Utilities
 
             public static void TransactionMenu(Account account, List<Account> accounts)
         {
+            Console.WriteLine("");
             Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance} {account.Currency}.");
             Console.WriteLine("Enter transaction amount. Put a \"-\" in front of the amount if it's an expense.");
             Console.WriteLine("");
@@ -292,14 +273,27 @@ namespace FinanceTracker.Utilities
                     )
                 {
                     Category category = Mappings.MapToCategory (categoryString);
+
+                    MoneyManagementService transactionManager = new MoneyManagementService(new TransactionRepository());
+
                     
-                    IrregularTransaction newTransaction = new(result, category, account.Id); 
-                    account.Balance = account.CalculateNewBalance(result);
+                    if (category == Category.Income)
+                    {
+                        IrregularTransaction newTransaction = new(result, category, account.Id);
+                        account.Balance = account.AddAmount(result);
+                        transactionManager.SaveTransaction(newTransaction);
+                    }
 
-                    MoneyManagement.TransactionManager transactionManager = new (new TransactionRepository());
-                    transactionManager.SaveTransaction(newTransaction);
+                    else
+                    {
+                        IrregularTransaction newTransaction = new(-result, category, account.Id);
+                        account.Balance = account.SubstractAmount(result);
+                        transactionManager.SaveTransaction(newTransaction);
+                    } 
 
-                    AccountManager accountManager = new (new AccountRepository());
+                    
+
+                    MoneyManagementService accountManager = new (new AccountRepository());
                     accountManager.SaveAccounts(accounts);
                 }
                 else
@@ -328,7 +322,7 @@ namespace FinanceTracker.Utilities
 
         public static void AfterTransactionMenuLoop(string entry, Account account, bool showMainMenu, bool mainExit, List<Account>accounts)
         {
-            MoneyManagement.TransactionManager transactionManager = new MoneyManagement.TransactionManager(new TransactionRepository());
+            MoneyManagementService transactionManager = new (new TransactionRepository());
             var transactions = transactionManager.LoadTransactions();
             
             do
@@ -364,6 +358,7 @@ namespace FinanceTracker.Utilities
             { 
                 if (fromAccRes <= accounts.Count)
                 {
+                    //domain???
                     Account fromAccount = accounts[fromAccRes - 1];
                     accounts.Remove(fromAccount);
 
@@ -378,26 +373,25 @@ namespace FinanceTracker.Utilities
                     {
                         if (toAccRes <= accounts.Count)
                         {
+                            //domain
                             Account toAccount = accounts[toAccRes - 1];
                             accounts.Remove(toAccount);
 
-                            //TODO: dispo berücksichtigen
                             Console.WriteLine($"Enter the amount (xx.xx) (max. {fromAccount.Balance} possible)");
                             string amountString = Console.ReadLine() ?? String.Empty;
 
                             if (decimal.TryParse(amountString, out decimal amount))
                             {
-                                //fromAccount.CalculateNewBalanceSendingAccount(toAccount.Currency, amount);
-                                //toAccount.CalculateNewBalanceReceivingAccount(fromAccount.Currency, amount);
+                                
+                                fromAccount.Balance = fromAccount.SubstractAmount(amount);
+                                toAccount.Balance = toAccount.AddAmount(amount);
 
-                                fromAccount.Balance =- amount;
-                                toAccount.Balance =+ amount;
-
-                                //add accounts with new balance
                                 accounts.AddRange([fromAccount, toAccount]);
 
-                                //TODO: transfers speichern
-                                AccountManager accountManager = new AccountManager(new AccountRepository());
+                                MoneyManagementService transactionManager = new MoneyManagementService(new TransactionRepository());
+                                transactionManager.SaveTransaction(new IrregularTransfer(amount, Category.Transfer, fromAccount.Id, toAccount.Id));
+
+                                MoneyManagementService accountManager = new (new AccountRepository());
                                 accountManager.SaveAccounts(accounts);
                             }
                             else

@@ -1,13 +1,14 @@
 ﻿using FinanceTracker.Utilities;
 using FinanceTracker.DataAccess;
-using FinanceTracker.MoneyManagement;
+using MoneyManagement;
+using MoneyManagement.Models;
 
 
 
 bool mainExit = false;
 bool showMainMenu = false;
 
-AccountManager accountManager = new AccountManager(new AccountRepository());
+MoneyManagementService accountManager = new (new AccountRepository());
 List<Account> accounts = accountManager.Accounts;
 
 do
