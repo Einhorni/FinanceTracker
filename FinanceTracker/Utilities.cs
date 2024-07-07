@@ -2,6 +2,8 @@
 using FinanceTracker.MoneyManagement;
 using MoneyManagement;
 using MoneyManagement.Models;
+using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 
 namespace FinanceTracker.Utilities
 {
@@ -9,6 +11,9 @@ namespace FinanceTracker.Utilities
     {
         public static string MainMenu(List<Account> accounts)
         {
+            if (accounts.Count > 0)
+                View.ShowAccounts(accounts);
+
             Console.WriteLine("");
             for (int i = 0; i <= accounts.Count-1; i++)
             {
@@ -122,6 +127,8 @@ namespace FinanceTracker.Utilities
                     showMainMenu = true; 
                 }
             }
+            else if (name == "9")
+                { }
             else
                 Console.WriteLine("You failed horribly at this simple task!");
         }
@@ -243,7 +250,7 @@ namespace FinanceTracker.Utilities
             return categoryString;
         }
 
-            public static void TransactionMenu(Account account, List<Account> accounts)
+        public static void TransactionMenu(Account account, List<Account> accounts)
         {
             Console.WriteLine("");
             Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance} {account.Currency}.");
@@ -290,8 +297,6 @@ namespace FinanceTracker.Utilities
                         account.Balance = account.SubstractAmount(result);
                         transactionManager.SaveTransaction(newTransaction);
                     } 
-
-                    
 
                     MoneyManagementService accountManager = new (new AccountRepository());
                     accountManager.SaveAccounts(accounts);
@@ -345,7 +350,53 @@ namespace FinanceTracker.Utilities
             } while (!showMainMenu);
         }
 
-        public static void TransferMenu(bool showMainMenu, List<Account>accounts)
+        //public static void TransferMenuLoop(bool showMainMenu, List<Account> accounts)
+        //{
+        //    Console.WriteLine("");
+        //    Console.WriteLine("1 - Choose Accounts");
+        //    Console.WriteLine("2 - To main Menu");
+        //    Console.WriteLine("");
+
+        //    string decision = Console.ReadLine();
+
+        //    do
+        //    {
+        //        switch (decision)
+        //        {
+        //            case "1": TransferMenu(showMainMenu, accounts); break;
+        //            case "2": MainMenu(accounts); showMainMenu = true;  break;
+        //            default: MainMenu(accounts); break;
+        //        }
+        //    } while (!showMainMenu);
+
+
+        //}
+
+        public static List<Account> SaveAccounts(string amountString, List<Account> accounts, Account fromAccount, Account toAccount)
+        {
+            if (decimal.TryParse(amountString, out decimal amount))
+            {
+
+                fromAccount.Balance = fromAccount.SubstractAmount(amount);
+                toAccount.Balance = toAccount.AddAmount(amount);
+
+                MoneyManagementService transactionManager = new MoneyManagementService(new TransactionRepository());
+                transactionManager.SaveTransaction(new IrregularTransfer(amount, Category.Transfer, fromAccount.Id, toAccount.Id));
+
+                MoneyManagementService accountManager = new(new AccountRepository());
+                accountManager.SaveAccounts([fromAccount, toAccount]);
+
+                return accountManager.LoadAccounts();
+            }
+
+            else
+            {
+                Console.WriteLine("You failed horribly at this simple task.");
+                return accounts;
+            }
+        }
+
+        public static List<Account> TransferMenu(bool showMainMenu, List<Account>accounts)
         {
             for (int i = 0; i < accounts.Count; i++) 
             {
@@ -353,9 +404,9 @@ namespace FinanceTracker.Utilities
             }
             
             string fromAccountString = Console.ReadLine();
-            
+
             if (Int32.TryParse(fromAccountString, out int fromAccRes))
-            { 
+            {
                 if (fromAccRes <= accounts.Count)
                 {
                     //domain???
@@ -373,36 +424,29 @@ namespace FinanceTracker.Utilities
                     {
                         if (toAccRes <= accounts.Count)
                         {
-                            //domain
                             Account toAccount = accounts[toAccRes - 1];
                             accounts.Remove(toAccount);
 
                             Console.WriteLine($"Enter the amount (xx.xx) (max. {fromAccount.Balance} possible)");
                             string amountString = Console.ReadLine() ?? String.Empty;
 
-                            if (decimal.TryParse(amountString, out decimal amount))
-                            {
-                                
-                                fromAccount.Balance = fromAccount.SubstractAmount(amount);
-                                toAccount.Balance = toAccount.AddAmount(amount);
 
-                                accounts.AddRange([fromAccount, toAccount]);
-
-                                MoneyManagementService transactionManager = new MoneyManagementService(new TransactionRepository());
-                                transactionManager.SaveTransaction(new IrregularTransfer(amount, Category.Transfer, fromAccount.Id, toAccount.Id));
-
-                                MoneyManagementService accountManager = new (new AccountRepository());
-                                accountManager.SaveAccounts(accounts);
-                            }
-                            else
-                                Console.WriteLine("You failed horribly at this simple task.");
-                        }
+                            var newAccounts = SaveAccounts(amountString, accounts, fromAccount, toAccount);
+                            showMainMenu = true;
+                            return newAccounts;
+                        } 
+                        else return accounts;
                     }
+                    else return accounts;
                 }
-                
+                else return accounts;
             }
 
-            else Console.WriteLine("You failed horribly at this simple task.");
+            else
+            {
+                Console.WriteLine("You failed horribly at this simple task.");
+                return accounts;
+            }
         }
     }
 }

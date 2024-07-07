@@ -49,6 +49,8 @@ namespace FinanceTracker.DataAccess
 
             transactions.Add(transaction);
 
+            //ALT: string jsonFile = System.Text.Json.JsonSerializer.Serialize(accountsDTO);
+            //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
             string jsonFile = JsonConvert.SerializeObject(transactions, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
 
             File.WriteAllText(path, jsonFile);

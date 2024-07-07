@@ -3,21 +3,17 @@ using Newtonsoft.Json;
 
 namespace FinanceTracker.DataAccess
 {
-
-
     public class AccountRepository : IAccountRepository
     {
         //for production use:
         //string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         //string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        public static string directory = @"C:\Progammieren\FinanceTracker\FinanceTracker\SavaData\";
-        public static string file = "accounts.txt";
-        public static string file1 = "accounts.txt";
+        private static string directory = @"C:\Progammieren\FinanceTracker\FinanceTracker\SavaData\";
+        private static string file = "accounts.txt";
+        string path = $"{directory}{file}";
 
         public List<Account> LoadAccounts()
-        {
-            string path = $"{directory}{file}";
-            string path1 = $"{directory}{file1}";
+        {            
             bool fileExists = File.Exists(path);
 
             if (fileExists)
@@ -38,9 +34,9 @@ namespace FinanceTracker.DataAccess
             }
         }
 
+
         public void SaveAccounts(List<Account> accounts)
         {
-            string path = $"{directory}{file}";
             bool fileExists = File.Exists(path);
 
             if (!fileExists)
@@ -48,6 +44,14 @@ namespace FinanceTracker.DataAccess
                 if (!Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
             }
+
+            //Accounts laden
+            //falls accounts vorhanden, dann ersetzen, wenn nicht, dann anhängen
+            var savedAccounts = LoadAccounts();
+            //alle gespeicherten accs, die nicht die id der accs haben
+            savedAccounts.Where(sa => accounts.Any(a => a.Id != sa.Id));
+            savedAccounts.AddRange(accounts);
+
 
             //ALT: string jsonFile = System.Text.Json.JsonSerializer.Serialize(accountsDTO);
             //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen

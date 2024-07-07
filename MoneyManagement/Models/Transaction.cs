@@ -29,7 +29,7 @@ namespace MoneyManagement.Models
             AccountId = currentAccountId;
         }
     }
-
+    
 
     //one time two way transaction (two accs)
     public class IrregularTransfer : Transaction

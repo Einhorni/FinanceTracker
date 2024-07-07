@@ -2,6 +2,7 @@
 using FinanceTracker.DataAccess;
 using MoneyManagement;
 using MoneyManagement.Models;
+using System.Security.Cryptography.X509Certificates;
 
 
 
@@ -12,10 +13,7 @@ MoneyManagementService accountManager = new (new AccountRepository());
 List<Account> accounts = accountManager.Accounts;
 
 do
-{
-    if (accounts.Count > 0) 
-        View.ShowAccounts(accounts);
-     
+{    
     string entry = View.MainMenu(accounts);
     int entryAsInt;
     bool mainMenuEntryIsInt = Int32.TryParse(entry, out entryAsInt);
@@ -29,7 +27,11 @@ do
         }
 
         else if (entryAsInt == accounts.Count + 1 && entryAsInt > accounts.Count)
-            View.TransferMenu(showMainMenu, accounts);
+        {
+            //View.TransferMenuLoop(showMainMenu, accounts);
+            var newaccounts = View.TransferMenu(showMainMenu, accounts);
+            accounts = newaccounts;
+        }
 
         else if (entryAsInt == accounts.Count + 2 && entryAsInt > accounts.Count)
             View.CreateAccountMenu(showMainMenu, accounts);
