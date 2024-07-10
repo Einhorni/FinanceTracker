@@ -19,3 +19,4 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 * Switches, if-statements and loops
 * IO, repositories, interfaces
 * Dependency injection, writing a Service
+* Seperated Logic from UI, only accessible through a service
