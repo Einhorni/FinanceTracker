@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using MoneyManagement.Models;
+using System.Collections.Generic;
 
 namespace FinanceTracker.DataAccess
 {
@@ -18,13 +19,26 @@ namespace FinanceTracker.DataAccess
 
             if (fileExists)
             {
-                string jsonFile = File.ReadAllText(path);
+                try
+                {
+                    string jsonFile = File.ReadAllText(path);
 
-                //ALT: List<Account> accounts = System.Text.Json.JsonSerializer.Deserialize<List<Account>>(jsonFile);
-                //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
-                List<Transaction> transactions = JsonConvert.DeserializeObject<List<Transaction>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+                    //ALT: List<Account> accounts = System.Text.Json.JsonSerializer.Deserialize<List<Account>>(jsonFile);
+                    //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
+                    List<Transaction> transactions = JsonConvert.DeserializeObject<List<Transaction>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
 
-                return transactions;
+                    return transactions;
+                }
+                catch (JsonException ex)
+                { 
+                    throw new Exception(ex.Message); 
+                }
+                catch (FileLoadException ex)
+                { 
+                    Console.WriteLine(ex.Message);
+                    List<Transaction> transactions = new();
+                    return transactions;
+                }
             }
 
             else
@@ -49,13 +63,22 @@ namespace FinanceTracker.DataAccess
 
             transactions.Add(transaction);
 
-            //ALT: string jsonFile = System.Text.Json.JsonSerializer.Serialize(accountsDTO);
-            //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
-            string jsonFile = JsonConvert.SerializeObject(transactions, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+            try
+            {
+                //ALT: string jsonFile = System.Text.Json.JsonSerializer.Serialize(accountsDTO);
+                //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
+                string jsonFile = JsonConvert.SerializeObject(transactions, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
 
-            File.WriteAllText(path, jsonFile);
+                File.WriteAllText(path, jsonFile);
 
-            return;
+                return;
+            }
+
+            catch (IOException ex)
+            { Console.WriteLine(ex.Message); return; }
+            catch (JsonException ex)
+            { throw new Exception(ex.Message);}
+
         }
 
     }

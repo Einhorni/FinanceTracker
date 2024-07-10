@@ -18,13 +18,27 @@ namespace FinanceTracker.DataAccess
 
             if (fileExists)
             {
-                string jsonFile = File.ReadAllText(path);
+                try 
+                {
+                    string jsonFile = File.ReadAllText(path);
 
-                //ALT: List<Account> accounts = System.Text.Json.JsonSerializer.Deserialize<List<Account>>(jsonFile);
-                //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
-                List<Account> accounts = JsonConvert.DeserializeObject<List<Account>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+                    //ALT: List<Account> accounts = System.Text.Json.JsonSerializer.Deserialize<List<Account>>(jsonFile);
+                    //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
+                    List<Account> accounts = JsonConvert.DeserializeObject<List<Account>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
 
-                return accounts;
+                    return accounts;
+                }
+
+                catch (JsonException ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+                catch (FileLoadException ex) 
+                { 
+                    Console.WriteLine(ex.Message);
+                    List<Account> Accounts = new();
+                    return Accounts;
+                }
             }
 
             else
@@ -45,21 +59,31 @@ namespace FinanceTracker.DataAccess
                     Directory.CreateDirectory(directory);
             }
 
-            //Accounts laden
-            //falls accounts vorhanden, dann ersetzen, wenn nicht, dann anhängen
             var savedAccounts = LoadAccounts();
-            //alle gespeicherten accs, die nicht die id der accs haben
+            
+            //alle accs die nicht verändert wurden / allte accounts und neue accounts anhängen
             savedAccounts.Where(sa => accounts.Any(a => a.Id != sa.Id));
             savedAccounts.AddRange(accounts);
 
 
             //ALT: string jsonFile = System.Text.Json.JsonSerializer.Serialize(accountsDTO);
             //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
-            string jsonFile = JsonConvert.SerializeObject(accounts, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
 
-            File.WriteAllText(path, jsonFile);
+            try
+            {
+                string jsonFile = JsonConvert.SerializeObject(accounts, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
 
-            return;
+                File.WriteAllText(path, jsonFile);
+
+                return;
+            }
+
+            catch ( IOException ex )
+            { Console.WriteLine(ex.Message); return;}
+            catch (JsonException ex)
+            { throw new Exception(ex.Message);}
+
+
         }
     }  
 }

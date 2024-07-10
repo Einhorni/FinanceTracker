@@ -2,8 +2,6 @@
 using FinanceTracker.MoneyManagement;
 using MoneyManagement;
 using MoneyManagement.Models;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 
 namespace FinanceTracker.Utilities
 {
@@ -52,7 +50,7 @@ namespace FinanceTracker.Utilities
             }
         }
 
-        public static void AccountMenu(Account account, List<Account> accounts, bool showMainMenu, bool mainExit)
+        public static void AccountMenu(Account account, List<Account> accounts)
         {
             MoneyManagementService moneyManager = new MoneyManagementService(new TransactionRepository());
             var transactions = moneyManager.LoadTransactions();
@@ -67,7 +65,7 @@ namespace FinanceTracker.Utilities
             if (entry == "1")
             {
                 View.TransactionMenu(account, accounts);
-                View.AfterTransactionMenuLoop(entry, account, showMainMenu, mainExit, accounts);
+                View.AfterTransactionMenuLoop(entry, account, accounts);
             }
             else if (entry == "9") { }
             else
@@ -93,7 +91,7 @@ namespace FinanceTracker.Utilities
             }
         }
 
-        public static void CreateAccountMenu(bool showMainMenu, List<Account> accounts)
+        public static void CreateAccountMenu(List<Account> accounts)
         {
 
             string name = View.GetAccoutName();
@@ -104,27 +102,22 @@ namespace FinanceTracker.Utilities
 
                 if (decimal.TryParse(balanceString, out decimal balance))
                 {
-
                     MockCurrency currency = View.GetAccoutCurreny();
+
                     if (currency == MockCurrency.Error)
                     {
                         Console.WriteLine("You failed horribly at this simple task!");
-                        showMainMenu = true;
                     }
-                        
                     else
                     { 
                         string accountTypeString = View.GetNewAccountType();
-
                         SaveAccount(accountTypeString, accounts, name, balance, currency);                        
                     }
-                    showMainMenu = true;                    
-
                 }
+
                 else
                 {
                     Console.WriteLine("You failed horribly at this simple task!");
-                    showMainMenu = true; 
                 }
             }
             else if (name == "9")
@@ -325,11 +318,12 @@ namespace FinanceTracker.Utilities
             return entry;
         }
 
-        public static void AfterTransactionMenuLoop(string entry, Account account, bool showMainMenu, bool mainExit, List<Account>accounts)
+        public static void AfterTransactionMenuLoop(string entry, Account account, List<Account>accounts)
         {
             MoneyManagementService transactionManager = new (new TransactionRepository());
             var transactions = transactionManager.LoadTransactions();
-            
+            bool showMainMenu = false;
+
             do
             {
                 ShowTransactions(account, transactions);
@@ -349,28 +343,6 @@ namespace FinanceTracker.Utilities
                 }
             } while (!showMainMenu);
         }
-
-        //public static void TransferMenuLoop(bool showMainMenu, List<Account> accounts)
-        //{
-        //    Console.WriteLine("");
-        //    Console.WriteLine("1 - Choose Accounts");
-        //    Console.WriteLine("2 - To main Menu");
-        //    Console.WriteLine("");
-
-        //    string decision = Console.ReadLine();
-
-        //    do
-        //    {
-        //        switch (decision)
-        //        {
-        //            case "1": TransferMenu(showMainMenu, accounts); break;
-        //            case "2": MainMenu(accounts); showMainMenu = true;  break;
-        //            default: MainMenu(accounts); break;
-        //        }
-        //    } while (!showMainMenu);
-
-
-        //}
 
         public static List<Account> SaveAccounts(string amountString, List<Account> accounts, Account fromAccount, Account toAccount)
         {
@@ -396,7 +368,7 @@ namespace FinanceTracker.Utilities
             }
         }
 
-        public static List<Account> TransferMenu(bool showMainMenu, List<Account>accounts)
+        public static List<Account> TransferMenu(List<Account>accounts)
         {
             for (int i = 0; i < accounts.Count; i++) 
             {
@@ -409,7 +381,7 @@ namespace FinanceTracker.Utilities
             {
                 if (fromAccRes <= accounts.Count)
                 {
-                    //domain???
+                    //remove fromAccount from List of Account
                     Account fromAccount = accounts[fromAccRes - 1];
                     accounts.Remove(fromAccount);
 
@@ -424,15 +396,14 @@ namespace FinanceTracker.Utilities
                     {
                         if (toAccRes <= accounts.Count)
                         {
+                            //remove toAccount from List of Account
                             Account toAccount = accounts[toAccRes - 1];
                             accounts.Remove(toAccount);
 
                             Console.WriteLine($"Enter the amount (xx.xx) (max. {fromAccount.Balance} possible)");
                             string amountString = Console.ReadLine() ?? String.Empty;
 
-
                             var newAccounts = SaveAccounts(amountString, accounts, fromAccount, toAccount);
-                            showMainMenu = true;
                             return newAccounts;
                         } 
                         else return accounts;
