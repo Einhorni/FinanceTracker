@@ -31,7 +31,7 @@ namespace FinanceTracker.Utilities
 
             List<Transaction> accountTransactions =
                     transactions
-                        .Where(t => t.AccountId == account.Id)
+                        .Where(t => t.FromAccountId == account.Id || t.ToAccountId == account.Id || t.AccountId == account.Id)
                         .OrderByDescending(t => t.Date)
                         .Take(10)
                         .ToList();
@@ -41,10 +41,16 @@ namespace FinanceTracker.Utilities
             foreach (Transaction transaction in accountTransactions)
             {
                 string stringCategories = Mappings.MapCategoryToString(transaction.Category);
-                string date = transaction.Date.ToShortDateString();
-
-                if (transaction.Amount > 0.0m)
+                //string date = transaction.Date.ToShortDateString();
+                string date = transaction.Date.ToString("dddd, dd.MMMM.yyyy HH:mm:ss");
+                
+                //display transfers
+                if(transaction.FromAccountId == account.Id)
+                    Console.WriteLine($"{date}: -{transaction.Amount}, {transaction.Category}");
+                //display pos amounts
+                else if (transaction.Amount > 0.0m)
                     Console.WriteLine($"{date}: +{transaction.Amount}, {transaction.Category}");
+                //display negative amounts
                 else
                     Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category}");
             }
