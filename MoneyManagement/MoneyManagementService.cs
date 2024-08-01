@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FinanceTracker.DataAccess;
+﻿using MoneyManagement.DataAccess.FileAccess;
 using MoneyManagement.Models;
-
+using MoneyManagement.DataAccess;
+using MoneyManagement.Entities;
 
 namespace MoneyManagement
 {
-    public class MoneyManagementService
+    internal class MoneyManagementService
     {
-
         private readonly IAccount? _account;
         private readonly IAccountRepository? _accountRepository;
-        public List<Account>? Accounts;
+        public Task<List<AccountDTO>>? Accounts;
         private readonly ITransactionRepository? _transactionRepository;
-        public List<Transaction>? Transactions;
+        public Task<List<TransactionDTO>>? Transactions;
 
 
 
@@ -25,19 +21,19 @@ namespace MoneyManagement
             Accounts = LoadAccounts();
         }
 
-        public MoneyManagementService(ITransactionRepository transactionRepository)
+        public MoneyManagementService(ITransactionRepository transactionRepository, Guid accountId)
         {
             _transactionRepository = transactionRepository;
-            Transactions = LoadTransactions();
+            Transactions = LoadTransactions(accountId);
         }
 
-        public MoneyManagementService(IAccount account, IAccountRepository accountRepository, ITransactionRepository transactionRepository)
+        public MoneyManagementService(IAccount account, IAccountRepository accountRepository, ITransactionRepository transactionRepository, Guid accountId)
         {
-            _account =  account;
+            _account = account;
             _accountRepository = accountRepository;
             Accounts = LoadAccounts();
             _transactionRepository = transactionRepository;
-            Transactions = LoadTransactions();
+            Transactions = LoadTransactions(accountId);
         }
 
 
@@ -47,21 +43,37 @@ namespace MoneyManagement
         { return _account.SubstractAmount(amount); }
 
 
-        public List<Account> LoadAccounts()
-        { return _accountRepository.LoadAccounts(); }
-
-        public void SaveAccounts(List<Account> accounts)
-        { _accountRepository.SaveAccounts(accounts); }
-
-        public List<Transaction> LoadTransactions()
+        public async Task<List<AccountDTO>> LoadAccounts()
         {
-            return _transactionRepository.LoadTransactions();
+            //accounts laden
+            var accounts = await _accountRepository.LoadAccounts();
+
+            var accountDTOs = new List<AccountDTO>();
+
+            //für jedes account die id nehmen und aus den jeweiligen transactions die summe errechnen
+            foreach (var account in accounts) 
+            {
+                
+                var balance = await _transactionRepository.GetBalance(Guid.Parse(account.Id));
+                var accountDto = Mappings.AccountToAccountDto(account, balance);
+                accountDTOs.Add(accountDto);
+                   
+            }
+            
+            return accountDTOs ; 
         }
 
-        public void SaveTransaction(Transaction transaction)
+        //public void SaveAccounts(List<AccountDTO> accounts)
+        //{ _accountRepository.SaveAccounts(accounts); }
+
+        public async Task<List<TransactionDTO>> LoadTransactions(Guid accountId)
         {
-            _transactionRepository.SaveTransaction(transaction);
+            return await _transactionRepository.LoadTransactions(accountId);
         }
 
+        //public void SaveTransaction(TransactionDTO transaction)
+        //{
+        //    _transactionRepository.SaveTransaction(transaction);
+        //}
     }
 }

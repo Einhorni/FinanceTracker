@@ -1,85 +1,58 @@
-﻿using Newtonsoft.Json;
-using MoneyManagement.Models;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Transactions;
+using Microsoft.EntityFrameworkCore;
+using MoneyManagement.DbContexts;
+using MoneyManagement.Entities;
+using MoneyManagement.Models;
 
-namespace FinanceTracker.DataAccess
+namespace MoneyManagement.DataAccess
 {
-    public class TransactionRepository : ITransactionRepository
+    internal class TransactionRepository : ITransactionRepository
     {
-        //for production use:
-        //string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        //string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        private static string directory =  @"C:\Progammieren\FinanceTracker\FinanceTracker\SavaData\";
-        private static string file = "transactions.txt";
-        public static string path = $"{directory}{file}";
+        private readonly FinanceContext _financeContext;
 
-        public List<Transaction> LoadTransactions()
-        { 
-            bool fileExists = File.Exists(path);
-
-            if (fileExists)
-            {
-                try
-                {
-                    string jsonFile = File.ReadAllText(path);
-
-                    //ALT: List<Account> accounts = System.Text.Json.JsonSerializer.Deserialize<List<Account>>(jsonFile);
-                    //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
-                    List<Transaction> transactions = JsonConvert.DeserializeObject<List<Transaction>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
-
-                    return transactions;
-                }
-                catch (JsonException ex)
-                { 
-                    throw new Exception(ex.Message); 
-                }
-                catch (FileLoadException ex)
-                { 
-                    Console.WriteLine(ex.Message);
-                    List<Transaction> transactions = new();
-                    return transactions;
-                }
-            }
-
-            else
-            {
-                List<Transaction> transactions = new();
-                return transactions;
-            }
-        }
-
-
-        public void SaveTransaction(Transaction transaction)
+        public TransactionRepository(FinanceContext financeContext)
         {
-            bool fileExists = File.Exists(path);
-
-            if (!fileExists)
-            {
-                if (!Directory.Exists(directory))
-                    Directory.CreateDirectory(directory);
-            }
-
-            List<Transaction> transactions = LoadTransactions();
-
-            transactions.Add(transaction);
-
-            try
-            {
-                //ALT: string jsonFile = System.Text.Json.JsonSerializer.Serialize(accountsDTO);
-                //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
-                string jsonFile = JsonConvert.SerializeObject(transactions, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
-
-                File.WriteAllText(path, jsonFile);
-
-                return;
-            }
-
-            catch (IOException ex)
-            { Console.WriteLine(ex.Message); return; }
-            catch (JsonException ex)
-            { throw new Exception(ex.Message);}
-
+            _financeContext = financeContext;
         }
 
+        public async Task<List<TransactionDTO>> LoadTransactions(Guid accountId)
+        {
+            var transactions = await
+                _financeContext.Transactions
+                .Where(t => t.AccountId == accountId.ToString())
+                .OrderByDescending(t => t.Date)
+                .ToListAsync();
+
+            var transactionsDto =
+                transactions
+                .Select(t => new TransactionDTO
+                {
+                    TransactionId = Guid.Parse(t.Id),
+                    AccountId = Guid.Parse(t.AccountId),
+                    Amount = t.Amount,
+                    FromAccountId = Guid.Parse(t.FromAccountId),
+                    ToAccountId = Guid.Parse(t.ToAccountId),
+                    Category = t.Category,
+                    Date = t.Date,
+                    Title = t.Title
+                })
+                .ToList();
+            return transactionsDto;
+        }
+
+        public async Task<decimal> GetBalance(Guid accountId)
+        {
+            var transactions = await
+            _financeContext.Transactions
+                .Where(t => t.AccountId == accountId.ToString())
+                .OrderByDescending(t => t.Date)
+                .ToListAsync();
+            return transactions.Sum(t => t.Amount);
+        }
     }
 }

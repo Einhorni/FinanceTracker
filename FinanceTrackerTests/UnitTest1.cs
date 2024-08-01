@@ -8,19 +8,19 @@ namespace FinanceTrackerTests
     
     public class UnitTest1
     {
-        Girokonto giro1 = new Girokonto("testacc1", 100.7m, MockCurrency.EUR, Guid.NewGuid(), 0.0m);
-        Girokonto giro2 = new Girokonto("testacc2", 10.765m, MockCurrency.EUR, Guid.NewGuid(), 10.0m);
-        Girokonto giro3 = new Girokonto("testacc3", 0.0m, MockCurrency.EUR, Guid.NewGuid(), 0.05m);
-        Girokonto giro4 = new Girokonto("testacc4", -50.0m, MockCurrency.EUR, Guid.NewGuid(), 0.0m);
-        Girokonto giro5 = new Girokonto("testacc4", 50.0m, MockCurrency.EUR, Guid.NewGuid(), 0.0m);
-        Girokonto giro6 = new Girokonto("testacc5", 50.0m, MockCurrency.Dollar, Guid.NewGuid(), 0.0m);
-        Girokonto giro7 = new Girokonto("testacc6", 50.0m, MockCurrency.ETF, Guid.NewGuid(), 0.0m);
-        Girokonto giro8 = new Girokonto("testacc7", 50.0m, MockCurrency.Bitcoin, Guid.NewGuid(), 0.0m);
+        Girokonto giro1 = new Girokonto("testacc1", 100.7m, MockCurrency.EUR, Guid.NewGuid(), DateTime.Now, 0.0m);
+        Girokonto giro2 = new Girokonto("testacc2", 10.765m, MockCurrency.EUR, Guid.NewGuid(), DateTime.Now, 10.0m);
+        Girokonto giro3 = new Girokonto("testacc3", 0.0m, MockCurrency.EUR, Guid.NewGuid(), DateTime.Now, 0.05m);
+        Girokonto giro4 = new Girokonto("testacc4", -50.0m, MockCurrency.EUR, Guid.NewGuid(), DateTime.Now, 0.0m);
+        Girokonto giro5 = new Girokonto("testacc4", 50.0m, MockCurrency.EUR, Guid.NewGuid(), DateTime.Now, 0.0m);
+        Girokonto giro6 = new Girokonto("testacc5", 50.0m, MockCurrency.Dollar, Guid.NewGuid(), DateTime.Now, 0.0m);
+        Girokonto giro7 = new Girokonto("testacc6", 50.0m, MockCurrency.ETF, Guid.NewGuid(), DateTime.Now, 0.0m);
+        Girokonto giro8 = new Girokonto("testacc7", 50.0m, MockCurrency.Bitcoin, Guid.NewGuid(), DateTime.Now, 0.0m);
         //Bar accs
 
 
-        MoneyManagementService accService = new MoneyManagementService(new AccountRepository());
-        MoneyManagementService transactionService = new MoneyManagementService(new TransactionRepository());
+        MoneyManagementFileService accService = new MoneyManagementService(new FileAccountRepository());
+        MoneyManagementFileService transactionService = new MoneyManagementService(new FileTransactionRepository());
 
         //??
         //[Theory]

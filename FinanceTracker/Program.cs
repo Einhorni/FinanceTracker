@@ -1,13 +1,15 @@
 ﻿using FinanceTracker.Utilities;
-using FinanceTracker.DataAccess;
 using MoneyManagement;
+using MoneyManagement.DataAccess.FileAccess;
 using MoneyManagement.Models;
 
 
 bool mainExit = false;
 
-MoneyManagementService accountManager = new (new AccountRepository());
-List<Account> accounts = accountManager.Accounts;
+MoneyManagementFileService accountManager = new (new FileAccountRepository());
+List<AccountDTO> accounts = accountManager.Accounts ?? [];
+//Load Categories
+//var categories = 
 
 do
 {    

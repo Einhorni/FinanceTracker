@@ -1,10 +1,11 @@
 ﻿using MoneyManagement.Models;
+using System.Transactions;
 
-namespace FinanceTracker.DataAccess
+namespace MoneyManagement.DataAccess
 {
-    public interface ITransactionRepository
+    internal interface ITransactionRepository
     {
-        public List<Transaction> LoadTransactions();
-        public void SaveTransaction(Transaction transaction);
+        Task<decimal> GetBalance(Guid accountId);
+        Task <List<TransactionDTO>> LoadTransactions(Guid accountId);
     }
 }

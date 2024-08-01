@@ -1,10 +1,16 @@
-﻿using MoneyManagement.Models;
+﻿using MoneyManagement.Entities;
+using MoneyManagement.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace FinanceTracker.DataAccess
+namespace MoneyManagement.DataAccess
 {
     public interface IAccountRepository
     {
-        public List<Account> LoadAccounts();
-        public void SaveAccounts(List<Account> accounts);
+        public Task<List<Account>> LoadAccounts();
+        //public void SaveAccounts(List<Account> accounts);
     }
 }

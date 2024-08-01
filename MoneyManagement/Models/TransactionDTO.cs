@@ -2,25 +2,25 @@
 
 namespace MoneyManagement.Models
 {
-    public class Transaction
+    public class TransactionDTO
     {
         public Guid TransactionId { get; set; }
         public decimal Amount { get; set; }
         public string? Title { get; set; }
         public DateTime Date { get; set; }
-        public Category Category { get; set; }
+        public string Category { get; set; } = string.Empty;
         public Guid AccountId { get; set; }
 
         //Alt: Sending/ReceivingAccount und nur TransferAccountId
         public Guid? ToAccountId { get; set; }
-        public Guid FromAccountId { get; set; }
+        public Guid? FromAccountId { get; set; }
     }
 
 
     //one time one way transaction (one acc)
-    public class IrregularTransaction : Transaction
+    public class IrregularTransaction : TransactionDTO
     {
-        public IrregularTransaction(decimal amount, Category category, Guid currentAccountId)
+        public IrregularTransaction(decimal amount, string category, Guid currentAccountId)
         {
             TransactionId = Guid.NewGuid();
             Amount = amount;
@@ -32,9 +32,9 @@ namespace MoneyManagement.Models
     
 
     //one time two way transaction (two accs)
-    public class IrregularTransfer : Transaction
+    public class IrregularTransfer : TransactionDTO
     {
-        public IrregularTransfer(decimal amount, Category category, Guid fromAccountId, Guid toAccountId)
+        public IrregularTransfer(decimal amount, string category, Guid fromAccountId, Guid toAccountId)
         {
             TransactionId = Guid.NewGuid();
             Amount = amount;

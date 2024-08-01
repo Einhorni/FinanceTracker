@@ -1,12 +1,13 @@
 ﻿namespace MoneyManagement.Models
 {
 
-    public class Account
+    public abstract class AccountDTO
     {
 
         public Guid Id;
         public string Name { get; set; } = string.Empty;
         public decimal Balance { get; set; }
+        public DateTime DateOfCreation { get; set; }
         public MockCurrency Currency { get; set; }
 
 
@@ -16,15 +17,12 @@
         { return Balance - amount; }
     }
 
-    public class Girokonto : Account
+    public class Girokonto : AccountDTO
     {
         //for later use
-        public decimal? OverdraftLimit { get; set; } //optional
-        //BankName optional
-        //IBAN optional
-        //BIC optional
+        public decimal OverdraftLimit { get; set; } 
         public Girokonto() { }
-        public Girokonto(string name, decimal balance, MockCurrency currency, Guid id, decimal overdraftLimit = 0.0m)
+        public Girokonto(string name, decimal balance, MockCurrency currency, Guid id, DateTime dateOfCreation, decimal overdraftLimit = 0.0m)
         {
 
             if (id == Guid.Empty)
@@ -34,10 +32,11 @@
             Balance = balance;
             Currency = currency;
             OverdraftLimit = overdraftLimit;
+            DateOfCreation = dateOfCreation;
         }
     }
 
-    public class Bargeldkonto : Account
+    public class Bargeldkonto : AccountDTO
     {
         public Bargeldkonto() { }
         public Bargeldkonto(string name, decimal balance, MockCurrency currency, Guid id)
@@ -49,6 +48,7 @@
             Name = name;
             Balance = balance;
             Currency = currency;
+            DateOfCreation = DateTime.Now;
         }
     }
 
@@ -89,10 +89,12 @@
     //    }
     //}
 
+
     //public class Brokerkonto : Account
     //{
     //    //Transferkonto
-    //    //Portfolio List[Name;]
+    //neue DB Tabelle für Investments
+    //    //Portfolio List [Name;]
     //    public decimal AddIncome(decimal amount, decimal kurs)
     //    { return Balance + amount; }
 

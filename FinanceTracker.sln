@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceTracker", "FinanceTracker\FinanceTracker.csproj", "{8A548009-501C-4D59-A30C-AB3AF8E4BCF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceTrackerConsole", "FinanceTracker\FinanceTrackerConsole.csproj", "{8A548009-501C-4D59-A30C-AB3AF8E4BCF1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BA97A0F2-B130-49DF-BE79-311A05CDCCF7} = {BA97A0F2-B130-49DF-BE79-311A05CDCCF7}
 	EndProjectSection
@@ -12,7 +12,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceTrackerTests", "Fina
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyManagement", "MoneyManagement\MoneyManagement.csproj", "{BA97A0F2-B130-49DF-BE79-311A05CDCCF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FInanceTrackerWeb", "FInanceTrackerWeb\FInanceTrackerWeb.csproj", "{687A2362-C4D6-4AB8-BEA1-870E9EB15DB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FInanceTrackerWeb", "FInanceTrackerWeb\FInanceTrackerWeb.csproj", "{687A2362-C4D6-4AB8-BEA1-870E9EB15DB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

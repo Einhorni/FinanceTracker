@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace MoneyManagement.Models
 {
     //better store in db
-    public enum Category
+    public enum CategoryDTO
     {
         ArtSupplies,
         Books,
