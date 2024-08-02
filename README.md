@@ -11,12 +11,15 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 
 ### Planned
 * write tests
-* write try/catch blocks for I/Os
 * create a MVC web app for easier handling
+
+### In Progress
+* maybe the app isn't working at the current stage
+* adding database functionalities and changing account infos to be saved
 
 ### Programming concepts included 
 * Basic sytnax and classes, inheritance
 * Switches, if-statements and loops
-* IO, repositories, interfaces
+* IO with try/catch blocks, repositories, interfaces
 * Dependency injection, writing a Service
 * Seperated Logic from UI, only accessible through a service
