@@ -1,11 +1,13 @@
 ﻿using MoneyManagement.Models;
-using System.Transactions;
+using MoneyManagement.Entities;
 
 namespace MoneyManagement.DataAccess
 {
-    internal interface ITransactionRepository
+    public interface ITransactionRepository
     {
         Task<decimal> GetBalance(Guid accountId);
-        Task <List<TransactionDTO>> LoadTransactions(Guid accountId);
+        Task <List<Transaction>> LoadTransactions(Guid accountId);
+
+        Task SaveTransactions(List<Transaction> transactions);
     }
 }

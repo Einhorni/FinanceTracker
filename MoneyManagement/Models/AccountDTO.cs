@@ -8,7 +8,7 @@
         public string Name { get; set; } = string.Empty;
         public decimal Balance { get; set; }
         public DateTime DateOfCreation { get; set; }
-        public MockCurrency Currency { get; set; }
+        public string Currency { get; set; }
 
 
         public decimal AddAmount(decimal amount)
@@ -22,7 +22,7 @@
         //for later use
         public decimal OverdraftLimit { get; set; } 
         public Girokonto() { }
-        public Girokonto(string name, decimal balance, MockCurrency currency, Guid id, DateTime dateOfCreation, decimal overdraftLimit = 0.0m)
+        public Girokonto(string name, decimal balance, string currency, Guid id, DateTime dateOfCreation, decimal overdraftLimit = 0.0m)
         {
 
             if (id == Guid.Empty)
@@ -39,7 +39,7 @@
     public class Bargeldkonto : AccountDTO
     {
         public Bargeldkonto() { }
-        public Bargeldkonto(string name, decimal balance, MockCurrency currency, Guid id)
+        public Bargeldkonto(string name, decimal balance, string currency, Guid id)
         {
 
             if (id == Guid.Empty)

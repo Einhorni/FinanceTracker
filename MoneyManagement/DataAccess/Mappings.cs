@@ -23,7 +23,7 @@ namespace MoneyManagement.DataAccess
                         Balance = balance,
                         Id = Guid.Parse(account.Id),
                         DateOfCreation = account.DateOfCreation,
-                        Currency = MapToCurrency(account.Currency)
+                        Currency = account.Currency
                     };
             }
 
@@ -36,7 +36,7 @@ namespace MoneyManagement.DataAccess
                         Balance = balance,
                         Id = Guid.Parse(account.Id),
                         DateOfCreation = account.DateOfCreation,
-                        Currency = MapToCurrency(account.Currency),
+                        Currency = account.Currency,
                         OverdraftLimit = account.Overdraft
                     };
             }
@@ -51,12 +51,12 @@ namespace MoneyManagement.DataAccess
                         Balance = 0.0m,
                         Id = Guid.Empty,
                         DateOfCreation = DateTime.MinValue,
-                        Currency = MapToCurrency(account.Currency)
+                        Currency = account.Currency
                     };
             };
         }
 
-        public static Account AccountDtoToAccount(AccountDTO accountDto, List<Transaction> transactions)
+        public static Account AccountDtoToAccount(AccountDTO accountDto)
         {
             if (accountDto == null) return null;
 
@@ -69,8 +69,7 @@ namespace MoneyManagement.DataAccess
                     Currency = bar.Currency.ToString(),
                     KindOfAccount = nameof(Bargeldkonto),
                     DateOfCreation = bar.DateOfCreation,
-                    Id = bar.Id.ToString(),
-                    Transactions = transactions
+                    Id = bar.Id.ToString()
                 };
             };
 
@@ -84,7 +83,6 @@ namespace MoneyManagement.DataAccess
                     KindOfAccount = nameof(Girokonto),
                     DateOfCreation = giro.DateOfCreation,
                     Id = giro.Id.ToString(),
-                    Transactions = transactions,
                     Overdraft = giro.OverdraftLimit,
                 };
             }

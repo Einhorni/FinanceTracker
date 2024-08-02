@@ -34,7 +34,7 @@ namespace MoneyManagement.Models
     //one time two way transaction (two accs)
     public class IrregularTransfer : TransactionDTO
     {
-        public IrregularTransfer(decimal amount, string category, Guid fromAccountId, Guid toAccountId)
+        public IrregularTransfer(decimal amount, string category, Guid fromAccountId, Guid toAccountId, Guid AccountId)
         {
             TransactionId = Guid.NewGuid();
             Amount = amount;

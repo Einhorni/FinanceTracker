@@ -8,19 +8,20 @@ using Microsoft.EntityFrameworkCore;
 using MoneyManagement.DbContexts;
 using MoneyManagement.Entities;
 using MoneyManagement.Models;
+using Transaction = MoneyManagement.Entities.Transaction;
 
 namespace MoneyManagement.DataAccess
 {
-    internal class TransactionRepository : ITransactionRepository
+    public class TransactionRepository : ITransactionRepository
     {
         private readonly FinanceContext _financeContext;
 
         public TransactionRepository(FinanceContext financeContext)
         {
-            _financeContext = financeContext;
+            _financeContext = financeContext ?? throw new ArgumentNullException(nameof(financeContext));
         }
 
-        public async Task<List<TransactionDTO>> LoadTransactions(Guid accountId)
+        public async Task<List<Entities.Transaction>> LoadTransactions(Guid accountId)
         {
             var transactions = await
                 _financeContext.Transactions
@@ -28,21 +29,7 @@ namespace MoneyManagement.DataAccess
                 .OrderByDescending(t => t.Date)
                 .ToListAsync();
 
-            var transactionsDto =
-                transactions
-                .Select(t => new TransactionDTO
-                {
-                    TransactionId = Guid.Parse(t.Id),
-                    AccountId = Guid.Parse(t.AccountId),
-                    Amount = t.Amount,
-                    FromAccountId = Guid.Parse(t.FromAccountId),
-                    ToAccountId = Guid.Parse(t.ToAccountId),
-                    Category = t.Category,
-                    Date = t.Date,
-                    Title = t.Title
-                })
-                .ToList();
-            return transactionsDto;
+            return transactions;
         }
 
         public async Task<decimal> GetBalance(Guid accountId)
@@ -54,5 +41,13 @@ namespace MoneyManagement.DataAccess
                 .ToListAsync();
             return transactions.Sum(t => t.Amount);
         }
+
+        public async Task SaveTransactions(List<Transaction> transactions)
+        {
+            var loadedTransactions = await _financeContext.Transactions.ToListAsync();
+            loadedTransactions.AddRange(transactions);
+            await _financeContext.SaveChangesAsync();
+        }
     }
+
 }

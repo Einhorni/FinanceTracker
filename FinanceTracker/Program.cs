@@ -1,39 +1,41 @@
 ﻿using FinanceTracker.Utilities;
 using MoneyManagement;
-using MoneyManagement.DataAccess.FileAccess;
-using MoneyManagement.Models;
+using MoneyManagement.DataAccess;
 
 
 bool mainExit = false;
 
-MoneyManagementFileService accountManager = new (new FileAccountRepository());
-List<AccountDTO> accounts = accountManager.Accounts ?? [];
-//Load Categories
-//var categories = 
+//MoneyManagementFileService accountManager = new (new FileAccountRepository());
+//List<AccountDTO> accounts = accountManager.Accounts ?? [];
+
+
+MoneyManagementService accountManager = new(new AccountRepository(new MoneyManagement.DbContexts.FinanceContext()));
+//var categories = moneymanager.GetCategories();
+var accountDtos = await accountManager.LoadAccounts();
 
 do
 {    
-    string entry = View.MainMenu(accounts);
+    string entry = View.MainMenu(accountDtos);
     int entryAsInt;
     bool mainMenuEntryIsInt = Int32.TryParse(entry, out entryAsInt);
 
     if (mainMenuEntryIsInt)
     {
-        if (entryAsInt <= accounts.Count)
+        if (entryAsInt <= accountDtos.Count)
         {
-            View.AccountMenu(accounts[entryAsInt - 1], accounts);
+            View.AccountMenu(accountDtos[entryAsInt - 1], accountDtos);
             continue;
         }
 
-        else if (entryAsInt == accounts.Count + 1 && entryAsInt > accounts.Count)
+        else if (entryAsInt == accountDtos.Count + 1 && entryAsInt > accountDtos.Count)
         {
             //View.TransferMenuLoop(showMainMenu, accounts);
-            var newaccounts = View.TransferMenu(accounts);
-            accounts = newaccounts;
+            var newaccounts = View.TransferMenu(accountDtos);
+            accountDtos = newaccounts;
         }
 
-        else if (entryAsInt == accounts.Count + 2 && entryAsInt > accounts.Count)
-            View.CreateAccountMenu(accounts);
+        else if (entryAsInt == accountDtos.Count + 2 && entryAsInt > accountDtos.Count)
+            View.CreateAccountMenu(["Dollar", "Euro"]);
 
         else if (entryAsInt == (9))
             mainExit = true;

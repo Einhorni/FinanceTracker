@@ -1,9 +1,22 @@
 ﻿using MoneyManagement.Models;
 
-namespace FinanceTracker.MoneyManagement
+namespace FinanceTracker.UIMappings
 {
     internal class UIMappings
     {
+        public static string MapToCurrencyString(string currencyString)
+        {
+            switch (currencyString)
+            {
+                case "e":
+                    return "Euro";
+                case "d":
+                    return "Dollar";
+            }
+            return "";
+        }
+
+
         public static MockCurrency MapToCurrency(string currencyString)
         {
             MockCurrency currency = new();
@@ -28,26 +41,26 @@ namespace FinanceTracker.MoneyManagement
             return currency;
         }
 
-        public static CategoryDTO MapToCategory(string categoryString)
-        {
-            CategoryDTO category = CategoryDTO.Empty;
-            switch (categoryString)
-            {
-                case "a": category = CategoryDTO.ArtSupplies; break;
-                case "b": category = CategoryDTO.Books; break;
-                case "f": category = CategoryDTO.Fees; break;
-                case "g": category = CategoryDTO.Groceries; break;
-                case "h": category = CategoryDTO.Household; break;
-                case "i": category = CategoryDTO.Insurance; break;
-                case "o": category = CategoryDTO.OtherHobbies; break;
-                case "p": category = CategoryDTO.PersonalHealth; break;
-                case "s": category = CategoryDTO.StreamAndTvAndPhone; break;
-                case "t": category = CategoryDTO.Taxes; break;
-                case "v": category = CategoryDTO.VehicleAndFuel; break;
-                case "+": category = CategoryDTO.Income; break;
-            }
-            return category;
-        }
+        //public static CategoryDTO MapToCategory(string categoryString)
+        //{
+        //    CategoryDTO category = CategoryDTO.Empty;
+        //    switch (categoryString)
+        //    {
+        //        case "a": category = CategoryDTO.ArtSupplies; break;
+        //        case "b": category = CategoryDTO.Books; break;
+        //        case "f": category = CategoryDTO.Fees; break;
+        //        case "g": category = CategoryDTO.Groceries; break;
+        //        case "h": category = CategoryDTO.Household; break;
+        //        case "i": category = CategoryDTO.Insurance; break;
+        //        case "o": category = CategoryDTO.OtherHobbies; break;
+        //        case "p": category = CategoryDTO.PersonalHealth; break;
+        //        case "s": category = CategoryDTO.StreamAndTvAndPhone; break;
+        //        case "t": category = CategoryDTO.Taxes; break;
+        //        case "v": category = CategoryDTO.VehicleAndFuel; break;
+        //        case "+": category = CategoryDTO.Income; break;
+        //    }
+        //    return category;
+        //}
 
         public static string MapCategoryToString(CategoryDTO category)
         {
