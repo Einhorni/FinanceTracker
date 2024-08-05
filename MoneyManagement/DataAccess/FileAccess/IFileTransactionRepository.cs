@@ -4,7 +4,7 @@ namespace MoneyManagement.DataAccess.FileAccess
 {
     public interface IFileTransactionRepository
     {
-        public List<TransactionDTO> LoadTransactions();
-        public void SaveTransaction(TransactionDTO transaction);
+        public List<Transaction> LoadTransactions();
+        public void SaveTransaction(Transaction transaction);
     }
 }

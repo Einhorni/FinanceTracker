@@ -10,29 +10,33 @@ namespace FinanceTracker.Utilities
 {
     internal static class View
     {
-        public static string MainMenu(List<AccountDTO> accounts)
+        public static string MainMenu(List<Account> accounts)
         {
             if (accounts.Count > 0)
-                View.ShowAccounts(accounts);
-
-            Console.WriteLine("");
-            for (int i = 0; i <= accounts.Count-1; i++)
             {
-                Console.WriteLine($"{i + 1} - Show account: {accounts[i].Name}");
+                View.ShowAccounts(accounts);
+                Console.WriteLine("");
+                for (int i = 0; i <= accounts.Count - 1; i++)
+                {
+                    Console.WriteLine($"{i + 1} - Show account: {accounts[i].Name}");
+                }
+                Console.WriteLine($"{accounts.Count + 1} - Make a transfer between accounts");
             }
-            Console.WriteLine($"{accounts.Count +1} - Make a transfer between accounts");
+            Console.WriteLine("");
+
             if (accounts.Count <= 6)
                 Console.WriteLine($"{accounts.Count +2} - Create a new account");
+            
             Console.WriteLine($"9 - Exit ");
             Console.WriteLine("");
             return Console.ReadLine() ?? String.Empty;
         }
 
-        public static void ShowTransactions (AccountDTO account, List<TransactionDTO> transactions)
+        public static void ShowTransactions (Account account, List<Transaction> transactions)
         {
             
 
-            List<TransactionDTO> accountTransactions =
+            List<Transaction> accountTransactions =
                     transactions
                         .Where(t => t.FromAccountId == account.Id || t.ToAccountId == account.Id || t.AccountId == account.Id)
                         .OrderByDescending(t => t.Date)
@@ -41,7 +45,7 @@ namespace FinanceTracker.Utilities
 
             Console.WriteLine($"");
             Console.WriteLine($"Last transactions:");
-            foreach (TransactionDTO transaction in accountTransactions)
+            foreach (Transaction transaction in accountTransactions)
             {
                 //nur mit FileDataAccess
                 //string stringCategories = UIMappings.MapCategoryToString(transaction.Category);
@@ -60,14 +64,12 @@ namespace FinanceTracker.Utilities
             }
         }
 
-        public static void AccountMenu(AccountDTO account, List<AccountDTO> accounts)
+        public static void AccountMenu(Account account, List<Account> accounts, MoneyManagementService accountManager)
         {
             //MoneyManagementFileService moneyManager = new MoneyManagementFileService(new FileTransactionRepository());
             //var transactions = moneyManager.LoadTransactions();
 
-            //MoneyManagementService transactionManager = new MoneyManagementService(new TransactionRepository(new MoneyManagement.DbContexts.FinanceContext()), account.Id);
-            MoneyManagementService transactionManager = new (new TransactionRepository(new MoneyManagement.DbContexts.FinanceContext()));
-            var transactions = transactionManager.LoadTransactions(account.Id).Result;
+            var transactions = accountManager.LoadTransactions(account.Id).Result;
 
             ShowTransactions(account, transactions);
 
@@ -78,8 +80,8 @@ namespace FinanceTracker.Utilities
 
             if (entry == "1")
             {
-                View.TransactionMenu(account, accounts);
-                View.AfterTransactionMenuLoop(entry, account, accounts);
+                View.TransactionMenu(account, accounts, accountManager);
+                View.AfterTransactionMenuLoop(entry, account, accounts, accountManager);
             }
             else if (entry == "9") { }
             else
@@ -89,7 +91,7 @@ namespace FinanceTracker.Utilities
 
         }
 
-        public static void ShowAccounts(List<AccountDTO> accounts)
+        public static void ShowAccounts(List<Account> accounts)
         {
             Console.WriteLine("");
 
@@ -107,7 +109,7 @@ namespace FinanceTracker.Utilities
             }
         }
 
-        public static void CreateAccountMenu(List<string> currencies)//(List<AccountDTO> accounts)
+        public static void CreateAccountMenu(List<string> currencies, MoneyManagementService accountManager)//(List<AccountDTO> accounts)
         {
 
             string name = View.GetAccoutName();
@@ -127,7 +129,7 @@ namespace FinanceTracker.Utilities
                     else
                     { 
                         string accountTypeString = View.GetNewAccountType();
-                        SaveAccount(accountTypeString, name, balance, currency);                        
+                        SaveAccount(accountTypeString, name, balance, currency, accountManager);                        
                     }
                 }
 
@@ -142,11 +144,9 @@ namespace FinanceTracker.Utilities
                 Console.WriteLine("You failed horribly at this simple task!");
         }
 
-        public static void SaveAccount(string accountTypeString, string name, decimal balance, string currency)
+        public static void SaveAccount(string accountTypeString, string name, decimal balance, string currency, MoneyManagementService accountManager)
         {
             //MoneyManagementFileService accountManager = new MoneyManagementFileService(new FileAccountRepository());
-
-            MoneyManagementService accountManager = new(new AccountRepository(new MoneyManagement.DbContexts.FinanceContext()));
 
             switch (accountTypeString)
             {
@@ -274,7 +274,7 @@ namespace FinanceTracker.Utilities
             return categoryNumberString;
         }
 
-        public static async void TransactionMenu(AccountDTO account, List<AccountDTO> accounts)
+        public static async void TransactionMenu(Account account, List<Account> accounts, MoneyManagementService accountManager)
         {
             Console.WriteLine("");
             Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance} {account.Currency}.");
@@ -282,8 +282,7 @@ namespace FinanceTracker.Utilities
             Console.WriteLine("");
             string amountString = Console.ReadLine() ?? String.Empty;
 
-            MoneyManagementService categoryManager = new MoneyManagementService(new CategoryRepository(new FinanceContext()));
-            var categories = await categoryManager.GetCategories();
+            var categories = await accountManager.GetCategories();
 
 
 
@@ -314,8 +313,6 @@ namespace FinanceTracker.Utilities
 
                     //MoneyManagementFileService transactionManager = new MoneyManagementFileService(new FileTransactionRepository());
 
-                    MoneyManagementService transactionManager = new MoneyManagementService(new TransactionRepository(new FinanceContext()));
-
                     //TODO: Überarbeiten: Income woander machen!
                     //if (category == CategoryDTO.Income)
                     //{
@@ -329,7 +326,7 @@ namespace FinanceTracker.Utilities
                     //{
                     IrregularTransaction newTransaction = new(result, categories[categoryNumber-1], account.Id);
                     account.Balance = account.SubstractAmount(result);
-                    transactionManager.SaveTransactions([newTransaction]);
+                    accountManager.SaveTransactions([newTransaction]);
                     //} 
 
                     //MoneyManagementFileService accountManager = new (new FileAccountRepository());
@@ -359,12 +356,11 @@ namespace FinanceTracker.Utilities
             return entry;
         }
 
-        public static void AfterTransactionMenuLoop(string entry, AccountDTO account, List<AccountDTO>accounts)
+        public static void AfterTransactionMenuLoop(string entry, Account account, List<Account>accounts, MoneyManagementService accountManager)
         {
             //MoneyManagementFileService transactionManager = new (new FileTransactionRepository());
             
-            MoneyManagementService transactionManager = new MoneyManagementService(new TransactionRepository(new FinanceContext()));
-            var transactions = transactionManager.LoadTransactions(account.Id).Result;
+            var transactions = accountManager.LoadTransactions(account.Id).Result;
 
             bool showMainMenu = false;
 
@@ -376,7 +372,7 @@ namespace FinanceTracker.Utilities
                 switch (entry)
                 {
                     case "1":
-                        View.TransactionMenu(account, accounts);
+                        View.TransactionMenu(account, accounts, accountManager);
                         break;
                     case "9":
                         showMainMenu = true;
@@ -388,7 +384,7 @@ namespace FinanceTracker.Utilities
             } while (!showMainMenu);
         }
 
-        public static List<AccountDTO> SaveAccounts(string amountString, List<AccountDTO> accounts, AccountDTO fromAccount, AccountDTO toAccount)
+        public static List<Account> SaveAccounts(string amountString, List<Account> accounts, Account fromAccount, Account toAccount, MoneyManagementService accountManager)
         {
             if (decimal.TryParse(amountString, out decimal amount))
             {
@@ -414,8 +410,7 @@ namespace FinanceTracker.Utilities
 
 
                 //MoneyManagementFileService transactionManager = new MoneyManagementFileService(new FileTransactionRepository());
-                MoneyManagementService transactionManager = new(new TransactionRepository(new FinanceContext()));
-                transactionManager.SaveTransactions([transactionFrom, transactionTo]);
+                accountManager.SaveTransactions([transactionFrom, transactionTo]);
 
                 //MoneyManagementFileService accountManager = new(new FileAccountRepository());
                 //accountManager.SaveAccounts([fromAccount, toAccount]);
@@ -438,7 +433,7 @@ namespace FinanceTracker.Utilities
             }
         }
 
-        public static List<AccountDTO> TransferMenu(List<AccountDTO>accounts)
+        public static List<Account> TransferMenu(List<Account>accounts, MoneyManagementService accountManager)
         {
             for (int i = 0; i < accounts.Count; i++) 
             {
@@ -452,7 +447,7 @@ namespace FinanceTracker.Utilities
                 if (fromAccRes <= accounts.Count)
                 {
                     //remove fromAccount from List of Account
-                    AccountDTO fromAccount = accounts[fromAccRes - 1];
+                    Account fromAccount = accounts[fromAccRes - 1];
                     accounts.Remove(fromAccount);
 
                     for (int i = 0; i < accounts.Count; i++)
@@ -467,13 +462,13 @@ namespace FinanceTracker.Utilities
                         if (toAccRes <= accounts.Count)
                         {
                             //remove toAccount from List of Account
-                            AccountDTO toAccount = accounts[toAccRes - 1];
+                            Account toAccount = accounts[toAccRes - 1];
                             accounts.Remove(toAccount);
 
                             Console.WriteLine($"Enter the amount (xx.xx) (max. {fromAccount.Balance} possible)");
                             string amountString = Console.ReadLine() ?? String.Empty;
 
-                            var newAccounts = SaveAccounts(amountString, accounts, fromAccount, toAccount);
+                            var newAccounts = SaveAccounts(amountString, accounts, fromAccount, toAccount, accountManager);
                             return newAccounts;
                         } 
                         else return accounts;

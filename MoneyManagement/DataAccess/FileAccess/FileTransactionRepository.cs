@@ -13,7 +13,7 @@ namespace MoneyManagement.DataAccess.FileAccess
         private static string file = "transactions.txt";
         public static string path = $"{directory}{file}";
 
-        public List<TransactionDTO> LoadTransactions()
+        public List<Transaction> LoadTransactions()
         {
             bool fileExists = File.Exists(path);
 
@@ -25,7 +25,7 @@ namespace MoneyManagement.DataAccess.FileAccess
 
                     //ALT: List<Account> accounts = System.Text.Json.JsonSerializer.Deserialize<List<Account>>(jsonFile);
                     //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
-                    List<TransactionDTO> transactions = JsonConvert.DeserializeObject<List<TransactionDTO>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+                    List<Transaction> transactions = JsonConvert.DeserializeObject<List<Transaction>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
 
                     return transactions;
                 }
@@ -36,20 +36,20 @@ namespace MoneyManagement.DataAccess.FileAccess
                 catch (FileLoadException ex)
                 {
                     Console.WriteLine(ex.Message);
-                    List<TransactionDTO> transactions = new();
+                    List<Transaction> transactions = new();
                     return transactions;
                 }
             }
 
             else
             {
-                List<TransactionDTO> transactions = new();
+                List<Transaction> transactions = new();
                 return transactions;
             }
         }
 
 
-        public void SaveTransaction(TransactionDTO transaction)
+        public void SaveTransaction(Transaction transaction)
         {
             bool fileExists = File.Exists(path);
 
@@ -59,7 +59,7 @@ namespace MoneyManagement.DataAccess.FileAccess
                     Directory.CreateDirectory(directory);
             }
 
-            List<TransactionDTO> transactions = LoadTransactions();
+            List<Transaction> transactions = LoadTransactions();
 
             transactions.Add(transaction);
 

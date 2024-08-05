@@ -9,9 +9,10 @@ using System.Threading.Tasks;
 namespace MoneyManagement.DataAccess
 {
    
-    public class Mappings
+    public static class Mappings
     {
-        public static AccountDTO AccountToAccountDto(Account account, decimal balance)
+        //Extension Method
+        public static Account AccountEntityToAccount(this AccountEntity account, decimal balance)
         {
             //ist entweder Bargeldkto oder Girokonto, in Zukunft noch andere
             if (account.KindOfAccount == "Bargeldkonto")
@@ -21,7 +22,7 @@ namespace MoneyManagement.DataAccess
                     {
                         Name = account.Name,
                         Balance = balance,
-                        Id = Guid.Parse(account.Id),
+                        Id = account.Id,
                         DateOfCreation = account.DateOfCreation,
                         Currency = account.Currency
                     };
@@ -34,7 +35,7 @@ namespace MoneyManagement.DataAccess
                     {
                         Name = account.Name,
                         Balance = balance,
-                        Id = Guid.Parse(account.Id),
+                        Id = account.Id,
                         DateOfCreation = account.DateOfCreation,
                         Currency = account.Currency,
                         OverdraftLimit = account.Overdraft
@@ -56,33 +57,33 @@ namespace MoneyManagement.DataAccess
             };
         }
 
-        public static Account AccountDtoToAccount(AccountDTO accountDto)
+        public static AccountEntity AccountToAccountEntity(this Account accountDto)
         {
             if (accountDto == null) return null;
 
             if (accountDto is Bargeldkonto)
             {
                 var bar = accountDto as Bargeldkonto;
-                return new Account
+                return new AccountEntity
                 {
                     Name = bar.Name,
                     Currency = bar.Currency.ToString(),
                     KindOfAccount = nameof(Bargeldkonto),
                     DateOfCreation = bar.DateOfCreation,
-                    Id = bar.Id.ToString()
+                    Id = bar.Id
                 };
             };
 
             if (accountDto is Girokonto)
             {
                 var giro = accountDto as Girokonto;
-                return new Account
+                return new AccountEntity
                 {
                     Name = giro.Name,
                     Currency = giro.Currency.ToString(),
                     KindOfAccount = nameof(Girokonto),
                     DateOfCreation = giro.DateOfCreation,
-                    Id = giro.Id.ToString(),
+                    Id = giro.Id,
                     Overdraft = giro.OverdraftLimit,
                 };
             }
@@ -91,39 +92,41 @@ namespace MoneyManagement.DataAccess
             
         }
 
-        public static TransactionDTO TransactionToTransactionDto(Transaction transaction)
-        {
-            return new TransactionDTO
-            {
-                TransactionId = Guid.Parse(transaction.Id),
-                Amount = transaction.Amount,
-                Title = transaction.Title,
-                Date = transaction.Date,
-                Category = transaction.Category,
-                AccountId = Guid.Parse(transaction.AccountId),
-                ToAccountId = Guid.Parse(transaction.ToAccountId),
-                FromAccountId = Guid.Parse(transaction.FromAccountId)
-                //TODO: Write CategoryMappings
-            };
-        }
 
 
-        public static Transaction TransactionDtoToTransaction(TransactionDTO transactionDTO)
+        public static TransactionEntity TransactionToTransactionEntity(this Transaction transactionDTO)
         {
-            return new Transaction
+            return new TransactionEntity
             {
-                Id = transactionDTO.TransactionId.ToString(),
+                Id = transactionDTO.TransactionId,
                 Amount = transactionDTO.Amount,
                 Category = transactionDTO.Category,
                 Date = transactionDTO.Date,
                 Title = transactionDTO.Title ?? string.Empty,
-                AccountId = transactionDTO.AccountId.ToString(),
-                FromAccountId = transactionDTO.FromAccountId.ToString(),
-                ToAccountId = transactionDTO.ToAccountId.ToString()
+                AccountId = transactionDTO.AccountId,
+                FromAccountId = transactionDTO.FromAccountId,
+                ToAccountId = transactionDTO.ToAccountId
             };
         }
 
 
+        public static Transaction TransactionEntityToTransaction(this TransactionEntity transactionEntity)
+        {
+            return new Transaction
+                {
+                    TransactionId = transactionEntity.Id,
+                    AccountId = transactionEntity.AccountId,
+                    Amount = transactionEntity.Amount,
+                    FromAccountId = transactionEntity.FromAccountId,
+                    ToAccountId = transactionEntity.ToAccountId,
+                    Category = transactionEntity.Category,
+                    Date = transactionEntity.Date,
+                    Title = transactionEntity.Title
+                };
+        }
+
+
+        //TODO: weg?
         public static MockCurrency MapToCurrency(string currencyString)
         {
             MockCurrency currency = new();

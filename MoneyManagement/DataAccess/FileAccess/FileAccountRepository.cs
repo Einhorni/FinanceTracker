@@ -12,7 +12,7 @@ namespace MoneyManagement.DataAccess.FileAccess
         private static string file = "accounts.txt";
         string path = $"{directory}{file}";
 
-        public List<AccountDTO> LoadAccounts()
+        public List<Account> LoadAccounts()
         {
             bool fileExists = File.Exists(path);
 
@@ -24,8 +24,8 @@ namespace MoneyManagement.DataAccess.FileAccess
 
                     //ALT: List<Account> accounts = System.Text.Json.JsonSerializer.Deserialize<List<Account>>(jsonFile);
                     //mit dem zusätzlichen Parameter unterscheidet JsonConvert zwischen den Typen
-                    List<AccountDTO> accounts =
-                        JsonConvert.DeserializeObject<List<AccountDTO>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }) ?? throw new NullReferenceException();
+                    List<Account> accounts =
+                        JsonConvert.DeserializeObject<List<Account>>(jsonFile, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }) ?? throw new NullReferenceException();
 
                     return accounts;
                 }
@@ -37,20 +37,20 @@ namespace MoneyManagement.DataAccess.FileAccess
                 catch (FileLoadException ex)
                 {
                     Console.WriteLine(ex.Message);
-                    List<AccountDTO> Accounts = new();
+                    List<Account> Accounts = new();
                     return Accounts;
                 }
             }
 
             else
             {
-                List<AccountDTO> Accounts = new();
+                List<Account> Accounts = new();
                 return Accounts;
             }
         }
 
 
-        public void SaveAccounts(List<AccountDTO> accounts)
+        public void SaveAccounts(List<Account> accounts)
         {
             bool fileExists = File.Exists(path);
 

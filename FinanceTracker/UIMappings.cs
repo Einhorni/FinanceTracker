@@ -62,25 +62,25 @@ namespace FinanceTracker.UIMappings
         //    return category;
         //}
 
-        public static string MapCategoryToString(CategoryDTO category)
-        {
-            string categoryString = string.Empty;
-            switch (category)
-            {
-                case CategoryDTO.ArtSupplies: categoryString = "ArtSupplies"; break;
-                case CategoryDTO.Books: categoryString = "Books"; break;
-                case CategoryDTO.Fees: categoryString = "Fees"; break;
-                case CategoryDTO.Groceries: categoryString = "Groceries"; break;
-                case CategoryDTO.Household: categoryString = "Household"; break;
-                case CategoryDTO.Insurance: categoryString = "Insurance"; break;
-                case CategoryDTO.OtherHobbies: categoryString = "Other Hobbies"; break;
-                case CategoryDTO.PersonalHealth: categoryString = "Personal Health"; break;
-                case CategoryDTO.StreamAndTvAndPhone: categoryString = "Strea, Tv and Phone"; break;
-                case CategoryDTO.Taxes: categoryString = "Taxes"; break;
-                case CategoryDTO.VehicleAndFuel: categoryString = "Vehicle and Fuel"; break;
-                case CategoryDTO.Income: categoryString = "Income"; break;
-            }
-            return categoryString;
-        }
+        //public static string MapCategoryToString(CategoryDTO category)
+        //{
+        //    string categoryString = string.Empty;
+        //    switch (category)
+        //    {
+        //        case CategoryDTO.ArtSupplies: categoryString = "ArtSupplies"; break;
+        //        case CategoryDTO.Books: categoryString = "Books"; break;
+        //        case CategoryDTO.Fees: categoryString = "Fees"; break;
+        //        case CategoryDTO.Groceries: categoryString = "Groceries"; break;
+        //        case CategoryDTO.Household: categoryString = "Household"; break;
+        //        case CategoryDTO.Insurance: categoryString = "Insurance"; break;
+        //        case CategoryDTO.OtherHobbies: categoryString = "Other Hobbies"; break;
+        //        case CategoryDTO.PersonalHealth: categoryString = "Personal Health"; break;
+        //        case CategoryDTO.StreamAndTvAndPhone: categoryString = "Strea, Tv and Phone"; break;
+        //        case CategoryDTO.Taxes: categoryString = "Taxes"; break;
+        //        case CategoryDTO.VehicleAndFuel: categoryString = "Vehicle and Fuel"; break;
+        //        case CategoryDTO.Income: categoryString = "Income"; break;
+        //    }
+        //    return categoryString;
+        //}
     }
 }

@@ -11,11 +11,10 @@ namespace MoneyManagement
     public class MoneyManagementFileService
     {
 
-        private readonly IAccount? _account;
         private readonly IFileAccountRepository? _accountRepository;
-        public List<AccountDTO>? Accounts;
+        public List<Account>? Accounts;
         private readonly IFileTransactionRepository? _transactionRepository;
-        public List<TransactionDTO>? Transactions;
+        public List<Transaction>? Transactions;
 
 
 
@@ -31,9 +30,8 @@ namespace MoneyManagement
             Transactions = LoadTransactions();
         }
 
-        public MoneyManagementFileService(IAccount account, IFileAccountRepository accountRepository, IFileTransactionRepository transactionRepository)
+        public MoneyManagementFileService(IFileAccountRepository accountRepository, IFileTransactionRepository transactionRepository)
         {
-            _account =  account;
             _accountRepository = accountRepository;
             Accounts = LoadAccounts();
             _transactionRepository = transactionRepository;
@@ -41,24 +39,18 @@ namespace MoneyManagement
         }
 
 
-        public decimal AddAmount(decimal amount)
-        { return _account.AddAmount(amount); }
-        public decimal SubstractAmount(decimal amount)
-        { return _account.SubstractAmount(amount); }
-
-
-        public List<AccountDTO> LoadAccounts()
+        public List<Account> LoadAccounts()
         { return _accountRepository.LoadAccounts(); }
 
-        public void SaveAccounts(List<AccountDTO> accounts)
+        public void SaveAccounts(List<Account> accounts)
         { _accountRepository.SaveAccounts(accounts); }
 
-        public List<TransactionDTO> LoadTransactions()
+        public List<Transaction> LoadTransactions()
         {
             return _transactionRepository.LoadTransactions();
         }
 
-        public void SaveTransaction(TransactionDTO transaction)
+        public void SaveTransaction(Transaction transaction)
         {
             _transactionRepository.SaveTransaction(transaction);
         }

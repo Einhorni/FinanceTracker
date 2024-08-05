@@ -18,7 +18,7 @@ namespace MoneyManagement.DataAccess
             _financeContext = financeContext ?? throw new ArgumentNullException(nameof(financeContext));
         }
 
-        public async Task<List<Category>> GetCategories()
+        public async Task<List<CategoryEntity>> GetCategories()
         {
             var categories = await _financeContext.Categories.ToListAsync();
             return categories;

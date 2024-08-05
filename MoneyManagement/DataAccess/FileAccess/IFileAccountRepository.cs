@@ -4,7 +4,7 @@ namespace MoneyManagement.DataAccess.FileAccess
 {
     public interface IFileAccountRepository
     {
-        public List<AccountDTO> LoadAccounts();
-        public void SaveAccounts(List<AccountDTO> accounts);
+        public List<Account> LoadAccounts();
+        public void SaveAccounts(List<Account> accounts);
     }
 }

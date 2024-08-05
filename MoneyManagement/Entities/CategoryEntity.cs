@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MoneyManagement.Entities
 {
-    public class Category
+    public class CategoryEntity
     {
         [Required]
         [Key]

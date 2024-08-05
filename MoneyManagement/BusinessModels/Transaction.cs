@@ -2,7 +2,7 @@
 
 namespace MoneyManagement.Models
 {
-    public class TransactionDTO
+    public class Transaction
     {
         public Guid TransactionId { get; set; }
         public decimal Amount { get; set; }
@@ -18,7 +18,7 @@ namespace MoneyManagement.Models
 
 
     //one time one way transaction (one acc)
-    public class IrregularTransaction : TransactionDTO
+    public class IrregularTransaction : Transaction
     {
         public IrregularTransaction(decimal amount, string category, Guid currentAccountId)
         {
@@ -32,7 +32,7 @@ namespace MoneyManagement.Models
     
 
     //one time two way transaction (two accs)
-    public class IrregularTransfer : TransactionDTO
+    public class IrregularTransfer : Transaction
     {
         public IrregularTransfer(decimal amount, string category, Guid fromAccountId, Guid toAccountId, Guid AccountId)
         {

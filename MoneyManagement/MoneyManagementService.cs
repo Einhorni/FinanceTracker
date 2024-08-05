@@ -2,117 +2,53 @@
 using MoneyManagement.Models;
 using MoneyManagement.DataAccess;
 using MoneyManagement.Entities;
+using MoneyManagement.DbContexts;
 
 namespace MoneyManagement
 {
     public class MoneyManagementService
     {
-        private readonly IAccount? _account;
-        private readonly IAccountRepository? _accountRepository;
-        public Task<List<AccountDTO>>? Accounts;
-        private readonly ITransactionRepository? _transactionRepository;
-        public Task<List<TransactionDTO>>? Transactions;
-        private readonly ICategoryRepository? _categoryRepository;
 
+        private readonly IAccountRepository _accountRepository;
+        private readonly ITransactionRepository _transactionRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public MoneyManagementService(ICategoryRepository categoryRepository)
+        public MoneyManagementService(IAccountRepository accountRepository, ITransactionRepository transactionRepository, ICategoryRepository categoryRepository)
         {
-            _categoryRepository = categoryRepository;
-        }
-
-        public MoneyManagementService(IAccountRepository accountRepository)
-        {
+            _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
-            //Accounts = LoadAccounts();
-        }
-
-        public MoneyManagementService(ITransactionRepository transactionRepository) //, Guid accountId)
-        {
             _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
-            //Transactions = LoadTransactions(accountId);
-        }
-
-        public MoneyManagementService(IAccount account, IAccountRepository accountRepository, ITransactionRepository transactionRepository, Guid accountId)
-        {
-            _account = account;
-            _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
-            //Accounts = LoadAccounts();
-            _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
-            //Transactions = LoadTransactions(accountId);
         }
 
 
 
-        public decimal AddAmount(decimal amount)
-        { return _account.AddAmount(amount); }
-        public decimal SubstractAmount(decimal amount)
-        { return _account.SubstractAmount(amount); }
-
-
-
-        public async Task<List<AccountDTO>> LoadAccounts()
+        public async Task<List<Account>> LoadAccounts()
         {
             var accounts = await _accountRepository.LoadAccounts();
 
-            var accountDTOs = new List<AccountDTO>();
-
-            foreach (var account in accounts) 
-            {
-                
-                var balance = await _transactionRepository.GetBalance(Guid.Parse(account.Id));
-                var accountDto = Mappings.AccountToAccountDto(account, balance);
-                accountDTOs.Add(accountDto);
-                   
-            }
-            
-            return accountDTOs ; 
+            return accounts;
         }
 
 
-        public void SaveAccount(AccountDTO accountDto)
+        public void SaveAccount(Account account)
         {
-            var account = Mappings.AccountDtoToAccount(accountDto);
 
-            _accountRepository.SaveAccount(account); 
+            _accountRepository.SaveAccount(account);
         }
 
 
-        public async Task<List<TransactionDTO>> LoadTransactions(Guid accountId)
+        public async Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
-            var transactionDTOs = new List<TransactionDTO>();
             var transactions = await _transactionRepository.LoadTransactions(accountId);
-            foreach (var transaction in transactions)
-            {
-                var transactionDTO =
-                    new TransactionDTO
-                    {
-                        TransactionId = Guid.Parse(transaction.Id),
-                        AccountId = Guid.Parse(transaction.AccountId),
-                        Amount = transaction.Amount,
-                        FromAccountId = Guid.Parse(transaction.FromAccountId),
-                        ToAccountId = Guid.Parse(transaction.ToAccountId),
-                        Category = transaction.Category,
-                        Date = transaction.Date,
-                        Title = transaction.Title
-                    };
-                transactionDTOs.Add(transactionDTO);
-            }
+            
 
-            return transactionDTOs;
-                
+            return transactions;
+
         }
 
 
-        public void SaveTransactions(List<TransactionDTO> transactionDTOs)
+        public void SaveTransactions(List<Transaction> transactions)
         {
-            var transactions = new List<Transaction>();
-
-            foreach (var transactionDTO in transactionDTOs)
-            {
-                var transaction = Mappings.TransactionDtoToTransaction(transactionDTO);
-                transactions.Add(transaction);
-            }
-
             _transactionRepository.SaveTransactions(transactions);
         }
 
@@ -122,6 +58,14 @@ namespace MoneyManagement
             var categories = await _categoryRepository.GetCategories();
             var categoriesList = categories.Select(c => c.Name).ToList();
             return categoriesList;
+        }
+
+        //Factory-Methode: das wir nur für die Konsolenanwendung gebraucht, damit ich nicht ständig das Objekt kompliziert erzeugen muss, sondern nur MoneyManagementService.Create()
+        //bei Websanwendungen kann ich dann dieses MoneyManagementDing per DI Container injizieren in der Program.cs
+        public static MoneyManagementService Create()
+        {
+            var financecontext = new FinanceContext();
+            return new(new AccountRepository(financecontext), new TransactionRepository(financecontext), new CategoryRepository(financecontext));
         }
     }
 }

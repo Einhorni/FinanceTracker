@@ -1,7 +1,7 @@
 ﻿namespace MoneyManagement.Models
 {
 
-    public abstract class AccountDTO
+    public abstract class Account
     {
 
         public Guid Id;
@@ -17,7 +17,7 @@
         { return Balance - amount; }
     }
 
-    public class Girokonto : AccountDTO
+    public class Girokonto : Account
     {
         //for later use
         public decimal OverdraftLimit { get; set; } 
@@ -36,7 +36,7 @@
         }
     }
 
-    public class Bargeldkonto : AccountDTO
+    public class Bargeldkonto : Account
     {
         public Bargeldkonto() { }
         public Bargeldkonto(string name, decimal balance, string currency, Guid id)

@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace MoneyManagement.Entities
 {
-    public class Transaction
+    public class TransactionEntity
     {
         [Required]
-        public string Id { get; set; } = string.Empty;
+        public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty ;
 
         [Required]
@@ -25,9 +25,12 @@ namespace MoneyManagement.Entities
         public string Category { get; set; } = string.Empty;
 
         [Required]
-        public string AccountId { get; set; } = string.Empty;
+        public Guid AccountId { get; set; }
 
-        public string? FromAccountId { get; set; } 
-        public string? ToAccountId { get; set; } 
+        [ForeignKey(nameof(AccountId))]
+        public AccountEntity Account { get; set; }
+
+        public Guid? FromAccountId { get; set; } 
+        public Guid? ToAccountId { get; set; }
     }
 }

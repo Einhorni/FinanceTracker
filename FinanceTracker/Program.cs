@@ -9,7 +9,7 @@ bool mainExit = false;
 //List<AccountDTO> accounts = accountManager.Accounts ?? [];
 
 
-MoneyManagementService accountManager = new(new AccountRepository(new MoneyManagement.DbContexts.FinanceContext()));
+MoneyManagementService accountManager = MoneyManagementService.Create();
 //var categories = moneymanager.GetCategories();
 var accountDtos = await accountManager.LoadAccounts();
 
@@ -23,19 +23,19 @@ do
     {
         if (entryAsInt <= accountDtos.Count)
         {
-            View.AccountMenu(accountDtos[entryAsInt - 1], accountDtos);
+            View.AccountMenu(accountDtos[entryAsInt - 1], accountDtos, accountManager);
             continue;
         }
 
         else if (entryAsInt == accountDtos.Count + 1 && entryAsInt > accountDtos.Count)
         {
             //View.TransferMenuLoop(showMainMenu, accounts);
-            var newaccounts = View.TransferMenu(accountDtos);
+            var newaccounts = View.TransferMenu(accountDtos, accountManager);
             accountDtos = newaccounts;
         }
 
         else if (entryAsInt == accountDtos.Count + 2 && entryAsInt > accountDtos.Count)
-            View.CreateAccountMenu(["Dollar", "Euro"]);
+            View.CreateAccountMenu(["Dollar", "Euro"], accountManager);
 
         else if (entryAsInt == (9))
             mainExit = true;

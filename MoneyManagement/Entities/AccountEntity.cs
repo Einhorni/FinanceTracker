@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace MoneyManagement.Entities
 {
-    public class Account
+    public class AccountEntity
     {
         [Required]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public Guid Id { get; set; }
 
         [Required]
         public DateTime DateOfCreation { get; set; }
@@ -31,6 +32,9 @@ namespace MoneyManagement.Entities
         public int InterestInterval { get; set; }
         public int InvestmentDuration { get; set; }
 
-        public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+        public ICollection<TransactionEntity> Transactions { get; set; } = new List<TransactionEntity>();
+
+
+
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MoneyManagement.DbContexts;
@@ -11,53 +12,62 @@ using MoneyManagement.DbContexts;
 namespace MoneyManagement.Migrations
 {
     [DbContext(typeof(FinanceContext))]
-    [Migration("20240726122702_createDb")]
-    partial class createDb
+    [Migration("20240805155521_foreignkeys_eingetragen")]
+    partial class foreignkeys_eingetragen
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.7")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            modelBuilder.Entity("MoneyManagement.Entities.Account", b =>
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("MoneyManagement.Entities.AccountEntity", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DateOfCreation")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("InterestInterval")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<double>("InterestRate")
-                        .HasColumnType("REAL");
+                        .HasColumnType("float");
 
                     b.Property<int>("InvestmentDuration")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    b.Property<string>("KindOfAccount")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Overdraft")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("MoneyManagement.Entities.Category", b =>
+            modelBuilder.Entity("MoneyManagement.Entities.CategoryEntity", b =>
                 {
                     b.Property<string>("Name")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Name");
 
@@ -118,6 +128,10 @@ namespace MoneyManagement.Migrations
                         },
                         new
                         {
+                            Name = "House"
+                        },
+                        new
+                        {
                             Name = "Taxes"
                         },
                         new
@@ -142,30 +156,34 @@ namespace MoneyManagement.Migrations
                         });
                 });
 
-            modelBuilder.Entity("MoneyManagement.Entities.Transaction", b =>
+            modelBuilder.Entity("MoneyManagement.Entities.TransactionEntity", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("AccountId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("FromAccountId")
-                        .HasColumnType("TEXT");
+                    b.Property<Guid?>("FromAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ToAccountId")
-                        .HasColumnType("TEXT");
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ToAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -174,16 +192,18 @@ namespace MoneyManagement.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("MoneyManagement.Entities.Transaction", b =>
+            modelBuilder.Entity("MoneyManagement.Entities.TransactionEntity", b =>
                 {
-                    b.HasOne("MoneyManagement.Entities.Account", null)
+                    b.HasOne("MoneyManagement.Entities.AccountEntity", "Account")
                         .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("MoneyManagement.Entities.Account", b =>
+            modelBuilder.Entity("MoneyManagement.Entities.AccountEntity", b =>
                 {
                     b.Navigation("Transactions");
                 });

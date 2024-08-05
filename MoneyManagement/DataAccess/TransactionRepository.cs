@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using MoneyManagement.DbContexts;
 using MoneyManagement.Entities;
 using MoneyManagement.Models;
-using Transaction = MoneyManagement.Entities.Transaction;
+using Transaction = MoneyManagement.Models.Transaction;
 
 namespace MoneyManagement.DataAccess
 {
@@ -21,13 +21,18 @@ namespace MoneyManagement.DataAccess
             _financeContext = financeContext ?? throw new ArgumentNullException(nameof(financeContext));
         }
 
-        public async Task<List<Entities.Transaction>> LoadTransactions(Guid accountId)
+        public async Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
-            var transactions = await
+            var transactionEntities = await
                 _financeContext.Transactions
-                .Where(t => t.AccountId == accountId.ToString())
+                .Where(t => t.AccountId == accountId)
                 .OrderByDescending(t => t.Date)
                 .ToListAsync();
+
+            var transactions =
+                transactionEntities
+                .Select(t => t.TransactionEntityToTransaction())
+                .ToList();
 
             return transactions;
         }
@@ -36,7 +41,7 @@ namespace MoneyManagement.DataAccess
         {
             var transactions = await
             _financeContext.Transactions
-                .Where(t => t.AccountId == accountId.ToString())
+                .Where(t => t.AccountId == accountId)
                 .OrderByDescending(t => t.Date)
                 .ToListAsync();
             return transactions.Sum(t => t.Amount);
@@ -44,8 +49,16 @@ namespace MoneyManagement.DataAccess
 
         public async Task SaveTransactions(List<Transaction> transactions)
         {
-            var loadedTransactions = await _financeContext.Transactions.ToListAsync();
-            loadedTransactions.AddRange(transactions);
+            var transactionEntities = new List<TransactionEntity>();
+
+            foreach (var transaction in transactions)
+            {
+                var transactionEntity = transaction.TransactionToTransactionEntity();
+                //var transaction = Mappings.TransactionToTransactionEntity(transactionDTO);
+                transactionEntities.Add(transactionEntity);
+            }
+
+            await _financeContext.Transactions.AddRangeAsync(transactionEntities);
             await _financeContext.SaveChangesAsync();
         }
     }
