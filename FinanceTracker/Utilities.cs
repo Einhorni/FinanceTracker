@@ -8,6 +8,7 @@ using MoneyManagement.Entities;
 using Microsoft.Identity.Client;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using String = System.String;
+using System.Collections.Generic;
 
 namespace FinanceTracker.Utilities
 {
@@ -26,13 +27,13 @@ namespace FinanceTracker.Utilities
                     Console.WriteLine($"{i + 1} - Show account: {accounts[i].Name}");
                 }
             }
-            
+
+            Console.WriteLine("");
+
             if (accounts.Count > 1)
             {
                 Console.WriteLine($"{accounts.Count + 1} - Make a transfer between accounts");
             }
-
-            Console.WriteLine("");
 
             if (accounts.Count <= 6)
             {
@@ -77,17 +78,11 @@ namespace FinanceTracker.Utilities
                 //nur mit FileDataAccess
                 //string stringCategories = UIMappings.MapCategoryToString(transaction.Category);
                 string date = transaction.Date.ToString("dddd, dd.MMMM.yyyy HH:mm:ss");
-                
-                //display transfers
-                //TODO: von AccountName
-                //if(transaction.FromAccountId == account.Id)
-                //    Console.WriteLine($"{date}: -{transaction.Amount}, {transaction.Category}");
-                //////display positive amounts
-                ////else if (transaction.Amount > 0.0m)
-                ////    Console.WriteLine($"{date}: +{transaction.Amount}, {transaction.Category}");
-                ////display negative amounts
-                //else
-                    Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category}");
+
+                //TODO: von AccountName - account müsste geladen werden - Account laden im Repository
+                //if (transaction.Category == "Transfer" && transaction.FromAccountId == account.Id)
+                //if (transaction.Category == "Transfer" && transaction.ToAccountId == account.Id)
+                Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category}");
             }
         }
 
@@ -101,15 +96,23 @@ namespace FinanceTracker.Utilities
             ShowTransactions(account, transactions);
 
             Console.WriteLine("");
-            Console.WriteLine("1 - Make a transaction");
+            Console.WriteLine("1 - Enter an expense");
+            Console.WriteLine("2 - Enter an income");
             Console.WriteLine("9 - Main Menu");
             string entry = Console.ReadLine();
 
             if (entry == "1")
             {
-                View.TransactionMenu(account, accounts, accountManager);
-                View.AfterTransactionMenuLoop(entry, account, accounts, accountManager);
+                View.TransactionMenu(account, accountManager);
+                View.AfterTransactionMenuLoop(account, accountManager);
             }
+
+            if (entry == "2")
+            {
+                View.IncomeMenu(account, accountManager);
+                View.AfterIncomeMenuLoop(account, accountManager);
+            }
+
             else if (entry == "9") { }
             else
             { Console.WriteLine("You failed horribly at this simple task!"); }
@@ -124,7 +127,6 @@ namespace FinanceTracker.Utilities
 
             for (int i = 0; i < accounts.Count; i++ )
             {
-                //TODO: einfach KindOfAccount mit ins AccountDTO?
                 string accountType;
                 if (accounts[i] as Bargeldkonto != null)
                     accountType = "Bargeldkonto";
@@ -282,10 +284,13 @@ namespace FinanceTracker.Utilities
         }
 
         
-        public static string GetCategoryNumberAsString(List<string> listedCategories)
+        public static (string, int, List<string>) GetCategoryNumberStringAndAmountOfCategories (List<Category> categories)
         {
-            var amountOfCategories = listedCategories.Count()-1;
-            var listedCategoriesWithoutTransfer = listedCategories.Where(c => c != "Transfer");
+            var listedCategories = categories
+                .Where(c => c.Expense && c.Name != "Transfer")
+                .Select(c => c.Name).ToList();
+
+            var amountOfCategories = listedCategories.Count;
 
             Console.WriteLine("------------------------------");
             Console.WriteLine("Please choose a category:");
@@ -297,34 +302,145 @@ namespace FinanceTracker.Utilities
 
             Console.WriteLine("");
             string categoryNumberString = Console.ReadLine() ?? String.Empty;
-            return categoryNumberString;
+
+            return (categoryNumberString, amountOfCategories, listedCategories);
         }
 
-        public static void TransactionMenu(Account account, List<Account> accounts, MoneyManagementService accountManager)
+
+        //TODO fast wie expense menu - kann ich das zusammenlegen
+        public static void IncomeMenu(Account account, MoneyManagementService accountManager)
+        {
+            //TODO: warum wird nur Cashback aufgelistet???
+            var categories= accountManager.GetCategories().Result;
+            var incomeCategories = categories
+                .Where(c => !c.Expense)
+                .Select(c => c.Name)
+                .ToList();
+
+
+            Console.WriteLine("");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("What kind of income:");
+            for(int i = 0; i <= incomeCategories.Count-1 ;i++)
+            {
+                Console.WriteLine($"{i+1} - {incomeCategories[i]}");
+            }
+            Console.WriteLine("");
+
+            var categoryString = Console.ReadLine() ?? String.Empty;
+
+            if (Int32.TryParse(categoryString, out var categoryNumber))
+            {
+                Console.WriteLine("");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("Enter income.");
+                Console.WriteLine("");
+
+                var icomeString = Console.ReadLine() ?? String.Empty;
+
+                if (Int32.TryParse(icomeString, out var incomeAmount))
+                {
+                    var transactionCategory = incomeCategories[categoryNumber - 1];
+
+                    IrregularTransaction newTransaction = new(incomeAmount, transactionCategory, account.Id);
+                    account.Balance = account.SubstractAmount(incomeAmount);
+                    accountManager.SaveTransactions([newTransaction]).Wait();
+
+                    Console.WriteLine("");
+                    Console.WriteLine("------------------------------");
+                    Console.WriteLine($"{incomeAmount} {account.Currency} {transactionCategory} added");
+                }
+                else
+                    Console.WriteLine("You failed horribly at this simple task!");
+
+                Console.WriteLine($"Current balance = {account.Balance}");
+                Console.WriteLine("");
+            }
+            else
+                Console.WriteLine("You failed horribly at this simple task!");
+        }
+
+
+        //TODO fast wie afterexpensemenu - kann ich das zusammenlegen
+        public static string AfterIncomeMenu()
         {
             Console.WriteLine("");
-            Console.WriteLine("Enter transaction amount. DON'T put a \"-\" in front.");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("1 - To enter another income");
+            Console.WriteLine("2 - To enter an expense");
+            Console.WriteLine("9 - To return to main menu");
+            Console.WriteLine("");
+            string entry = Console.ReadLine() ?? String.Empty;
+            return entry;
+        }
+
+
+        //TODO fast wie afterexpensemenuloop - kann ich das zusammenlegen
+        public static void AfterIncomeMenuLoop(Account account, MoneyManagementService accountManager)
+        {
+            //MoneyManagementFileService transactionManager = new (new FileTransactionRepository());
+            bool showMainMenu = false;
+
+            do
+            {
+                var transactions = accountManager.LoadTransactions(account.Id).Result;
+                ShowTransactions(account, transactions);
+                var entry = View.AfterIncomeMenu();
+
+                switch (entry)
+                {
+                    case "1":
+                        View.IncomeMenu(account, accountManager);
+                        break;
+                    case "2":
+                        View.TransactionMenu(account, accountManager);
+                        break;
+                    case "9":
+                        showMainMenu = true;
+                        break;
+                    default:
+                        Console.WriteLine("You failed horribly at this simple task!");
+                        break;
+                }
+            } while (!showMainMenu);
+        }
+
+
+
+        public static void TransactionMenu(Account account, MoneyManagementService accountManager)
+        {
+            //TODO: drehen: erst category, danach betrag
+            Console.WriteLine("");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("Enter expense amount. DON'T put a \"-\" in front.");
             Console.WriteLine("");
             string amountString = Console.ReadLine() ?? String.Empty;
 
             var categories = accountManager.GetCategories().Result;
+            
 
-            if (decimal.TryParse(amountString, out decimal result)) 
+            if (decimal.TryParse(amountString, out decimal amount)) 
             {
-                Int32.TryParse(GetCategoryNumberAsString(categories), out int categoryNumber);
+                var (categoryNumberString, amoutOfCategories, listedCategories) = GetCategoryNumberStringAndAmountOfCategories(categories);
+                Int32.TryParse(categoryNumberString, out int categoryNumber);
 
-                if (categoryNumber >=1 && categoryNumber <= categories.Count)
+                if (categoryNumber >=1 && categoryNumber <= amoutOfCategories)
                 {
                     //MoneyManagementFileService transactionManager = new MoneyManagementFileService(new FileTransactionRepository());
 
                     //TODO: Überarbeiten: Income woanders machen!
-                    
-                    IrregularTransaction newTransaction = new(-result, categories[categoryNumber-1], account.Id);
-                    account.Balance = account.SubstractAmount(result);
+
+                    var transactionCategory = listedCategories[categoryNumber-1];
+
+                    IrregularTransaction newTransaction = new(-amount, transactionCategory, account.Id);
+                    account.Balance = account.SubstractAmount(amount);
                     accountManager.SaveTransactions([newTransaction]).Wait();
 
                     //MoneyManagementFileService accountManager = new (new FileAccountRepository());
                     //accountManager.SaveAccounts(accounts);
+                    Console.WriteLine("");
+                    Console.WriteLine("------------------------------");
+                    Console.WriteLine($"{amount} {account.Currency} for {transactionCategory} substracted");
                 }
                 else
                     Console.WriteLine("You failed horribly at this simple task!");
@@ -333,7 +449,6 @@ namespace FinanceTracker.Utilities
             else
                 Console.WriteLine("You failed horribly at this simple task!");
 
-            Console.WriteLine("");
             Console.WriteLine($"Current balance = {account.Balance}");
             Console.WriteLine("");
         }
@@ -344,14 +459,15 @@ namespace FinanceTracker.Utilities
         {
             Console.WriteLine("");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("1 - To enter another amount");
+            Console.WriteLine("1 - To enter another expense");
+            Console.WriteLine("2 - To enter an income");
             Console.WriteLine("9 - To return to main menu");
             Console.WriteLine("");
             string entry = Console.ReadLine() ?? String.Empty;
             return entry;
         }
 
-        public static void AfterTransactionMenuLoop(string entry, Account account, List<Account>accounts, MoneyManagementService accountManager)
+        public static void AfterTransactionMenuLoop(Account account, MoneyManagementService accountManager)
         {
             //MoneyManagementFileService transactionManager = new (new FileTransactionRepository());
             bool showMainMenu = false;
@@ -360,12 +476,15 @@ namespace FinanceTracker.Utilities
             {
                 var transactions = accountManager.LoadTransactions(account.Id).Result;
                 ShowTransactions(account, transactions);
-                entry = View.AfterTransactionMenu();
+                var entry = View.AfterTransactionMenu();
 
                 switch (entry)
                 {
                     case "1":
-                        View.TransactionMenu(account, accounts, accountManager);
+                        View.TransactionMenu(account, accountManager);
+                        break;
+                    case "2":
+                        View.IncomeMenu(account, accountManager);
                         break;
                     case "9":
                         showMainMenu = true;

@@ -22,39 +22,36 @@ namespace MoneyManagement
 
 
 
-        public async Task<List<Account>> LoadAccounts()
+        public Task<List<Account>> LoadAccounts()
         {
-            var accounts = await _accountRepository.LoadAccounts();
-
-            return accounts;
+            return _accountRepository.LoadAccounts();
         }
 
 
         public Task SaveAccount(Account account)
         {
-
             return _accountRepository.SaveAccount(account);
         }
 
-        //ist möglich das hier mit async & await zu machen, es geht aber auch mit Task & return wie oben und unten
-        public async Task<List<Transaction>> LoadTransactions(Guid accountId)
+        
+        public Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
-            var transactions = await _transactionRepository.LoadTransactions(accountId);
-            return transactions;
+            return _transactionRepository.LoadTransactions(accountId);
         }
 
-
+        //kein async (ist möglich, aber...), nur ein Task, weil nichts weiter mit dem Ergebnis gemacht wird -> avoid state machine (creates overhead)
+        //auf den Task wird dann in der Oberfläche mit Wait() (wenn void zurückkommt) oder Result (wenn es eine Rückgabe gibt) gewartet
         public Task SaveTransactions(List<Transaction> transactions)
         {
             return _transactionRepository.SaveTransactions(transactions);
         }
 
         //hier ist async & await wichtig, da ich eine Operation mit categories anfange
-        public async Task<List<string>> GetCategories()
+        public async Task<List<Category>> GetCategories()
         {
             var categories = await _categoryRepository.GetCategories();
-            var categoriesList = categories.Select(c => c.Name).ToList();
-            return categoriesList;
+            //var categoriesList = categories.Select(c => c.Name).ToList();
+            return categories;
         }
 
         //Factory-Methode: das wir nur für die Konsolenanwendung gebraucht, damit ich nicht ständig das Objekt kompliziert erzeugen muss, sondern nur MoneyManagementService.Create()

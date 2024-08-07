@@ -23,7 +23,7 @@ namespace MoneyManagement.DataAccess
 
         public async Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
-            var categories = await _financeContext.Categories.Where(c => c.Expense).ToListAsync();
+            var categories = await _financeContext.Categories./*Where(c => c.Expense).*/ToListAsync();
 
             var transactionEntities = await
                 _financeContext.Transactions
@@ -42,15 +42,6 @@ namespace MoneyManagement.DataAccess
             return transactions;
         }
 
-        public async Task<decimal> GetBalance(Guid accountId)
-        {
-            var transactions = await
-            _financeContext.Transactions
-                .Where(t => t.AccountId == accountId)
-                .OrderByDescending(t => t.Date)
-                .ToListAsync();
-            return transactions.Sum(t => t.Amount);
-        }
 
         public async Task SaveTransactions(List<Transaction> transactions)
         {

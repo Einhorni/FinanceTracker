@@ -4,6 +4,6 @@ namespace MoneyManagement.DataAccess
 {
     public interface ICategoryRepository
     {
-        Task<List<CategoryEntity>> GetCategories();
+        Task<List<Models.Category>> GetCategories();
     }
 }

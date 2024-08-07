@@ -11,7 +11,7 @@ namespace MoneyManagement.DataAccess
    
     public static class Mappings
     {
-        //Extension Method
+        //Extension Method auf AccountEntity mit this
         public static Account AccountEntityToAccount(this AccountEntity account, decimal balance)
         {
             //ist entweder Bargeldkto oder Girokonto, in Zukunft noch andere
@@ -57,6 +57,7 @@ namespace MoneyManagement.DataAccess
             };
         }
 
+
         public static AccountEntity AccountToAccountEntity(this Account accountDto)
         {
             if (accountDto == null) return null;
@@ -93,7 +94,6 @@ namespace MoneyManagement.DataAccess
         }
 
 
-
         public static TransactionEntity TransactionToTransactionEntity(this Transaction transactionDTO)
         {
             return new TransactionEntity
@@ -123,24 +123,6 @@ namespace MoneyManagement.DataAccess
                     Date = transactionEntity.Date,
                     Title = transactionEntity.Title
                 };
-        }
-
-
-        //TODO: weg?
-        public static MockCurrency MapToCurrency(string currencyString)
-        {
-            MockCurrency currency = new();
-            switch (currencyString)
-            {
-                case "Dollar":
-                    currency = MockCurrency.Dollar;
-                    break;
-
-                case "EUR":
-                    currency = MockCurrency.EUR;
-                    break;
-            }
-            return currency;
         }
     }
 }

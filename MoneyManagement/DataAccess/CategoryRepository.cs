@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MoneyManagement.DbContexts;
 using MoneyManagement.Entities;
+using MoneyManagement.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,12 +19,13 @@ namespace MoneyManagement.DataAccess
             _financeContext = financeContext ?? throw new ArgumentNullException(nameof(financeContext));
         }
 
-        public async Task<List<CategoryEntity>> GetCategories()
+        public async Task<List<Category>> GetCategories()
         {
-            var categories =
+            var categoryEntities =
                 await _financeContext.Categories
-                .Where(c => c.Expense == true)
+                //.Where(c => c.Expense == true)
                 .ToListAsync();
+            var categories = categoryEntities.Select(c => new Category { Name = c.Name, Expense = c.Expense }).ToList();
             return categories;
         }
     }
