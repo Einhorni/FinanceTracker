@@ -16,7 +16,7 @@ namespace MoneyManagement.Models
         public Guid? FromAccountId { get; set; }
     }
 
-
+    //TODO: Unterschied wird im Moment beim Laden aus der DB nicht mehr beachtet
     //one time one way transaction (one acc)
     public class IrregularTransaction : Transaction
     {
@@ -34,7 +34,7 @@ namespace MoneyManagement.Models
     //one time two way transaction (two accs)
     public class IrregularTransfer : Transaction
     {
-        public IrregularTransfer(decimal amount, string category, Guid fromAccountId, Guid toAccountId, Guid AccountId)
+        public IrregularTransfer(decimal amount, string category, Guid fromAccountId, Guid toAccountId, Guid accountId)
         {
             TransactionId = Guid.NewGuid();
             Amount = amount;
@@ -42,7 +42,7 @@ namespace MoneyManagement.Models
             Category = category;
             FromAccountId = fromAccountId;
             ToAccountId = toAccountId;
-            AccountId = fromAccountId;
+            AccountId = accountId;
         }
     }
 

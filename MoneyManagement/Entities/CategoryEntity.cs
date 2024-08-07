@@ -14,5 +14,7 @@ namespace MoneyManagement.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Name { get; set; } = string.Empty;
+        [Required]
+        public bool Expense {  get; set; }
     }
 }

@@ -11,6 +11,6 @@ namespace MoneyManagement.DataAccess
     public interface IAccountRepository
     {
         public Task<List<Account>> LoadAccounts();
-        public void SaveAccount(Account account);
+        public Task SaveAccount(Account account);
     }
 }

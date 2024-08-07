@@ -3,6 +3,8 @@ using MoneyManagement;
 using MoneyManagement.DataAccess;
 
 
+//TODO: Schleife auslagern, Program.cs soll nur aufrufen
+
 bool mainExit = false;
 
 //MoneyManagementFileService accountManager = new (new FileAccountRepository());
@@ -11,30 +13,37 @@ bool mainExit = false;
 
 MoneyManagementService accountManager = MoneyManagementService.Create();
 //var categories = moneymanager.GetCategories();
-var accountDtos = await accountManager.LoadAccounts();
 
+
+
+//TODO: If else verschlanken!
 do
-{    
+{
+    var accountDtos = accountManager.LoadAccounts().Result;
     string entry = View.MainMenu(accountDtos);
     int entryAsInt;
     bool mainMenuEntryIsInt = Int32.TryParse(entry, out entryAsInt);
 
     if (mainMenuEntryIsInt)
     {
+        //Show Account Menu
         if (entryAsInt <= accountDtos.Count)
         {
             View.AccountMenu(accountDtos[entryAsInt - 1], accountDtos, accountManager);
             continue;
         }
 
-        else if (entryAsInt == accountDtos.Count + 1 && entryAsInt > accountDtos.Count)
+        //Show Transer between two accounts Menu only if there are at least 2 accounts
+        else if (entryAsInt == accountDtos.Count + 1 && accountDtos.Count > 1)
         {
-            //View.TransferMenuLoop(showMainMenu, accounts);
             var newaccounts = View.TransferMenu(accountDtos, accountManager);
             accountDtos = newaccounts;
         }
 
-        else if (entryAsInt == accountDtos.Count + 2 && entryAsInt > accountDtos.Count)
+        else if (entryAsInt == accountDtos.Count + 1 && accountDtos.Count == 1)
+            View.CreateAccountMenu(["Dollar", "Euro"], accountManager);
+
+        else if (entryAsInt == accountDtos.Count + 2 && accountDtos.Count > 1)
             View.CreateAccountMenu(["Dollar", "Euro"], accountManager);
 
         else if (entryAsInt == (9))

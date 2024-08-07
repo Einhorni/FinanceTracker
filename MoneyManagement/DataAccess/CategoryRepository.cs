@@ -20,7 +20,10 @@ namespace MoneyManagement.DataAccess
 
         public async Task<List<CategoryEntity>> GetCategories()
         {
-            var categories = await _financeContext.Categories.ToListAsync();
+            var categories =
+                await _financeContext.Categories
+                .Where(c => c.Expense == true)
+                .ToListAsync();
             return categories;
         }
     }

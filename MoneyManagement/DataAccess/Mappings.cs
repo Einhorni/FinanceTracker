@@ -100,7 +100,7 @@ namespace MoneyManagement.DataAccess
             {
                 Id = transactionDTO.TransactionId,
                 Amount = transactionDTO.Amount,
-                Category = transactionDTO.Category,
+                CategoryName = transactionDTO.Category,
                 Date = transactionDTO.Date,
                 Title = transactionDTO.Title ?? string.Empty,
                 AccountId = transactionDTO.AccountId,
@@ -119,7 +119,7 @@ namespace MoneyManagement.DataAccess
                     Amount = transactionEntity.Amount,
                     FromAccountId = transactionEntity.FromAccountId,
                     ToAccountId = transactionEntity.ToAccountId,
-                    Category = transactionEntity.Category,
+                    Category = transactionEntity.CategoryName,
                     Date = transactionEntity.Date,
                     Title = transactionEntity.Title
                 };

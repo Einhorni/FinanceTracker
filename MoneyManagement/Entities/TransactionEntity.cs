@@ -21,8 +21,8 @@ namespace MoneyManagement.Entities
         public DateTime Date { get; set; }
 
         [Required]
-        [ForeignKey("Category")]
-        public string Category { get; set; } = string.Empty;
+        [ForeignKey(nameof(CategoryName))]
+        public string CategoryName { get; set; } = string.Empty;
 
         [Required]
         public Guid AccountId { get; set; }

@@ -23,9 +23,14 @@ namespace MoneyManagement.DataAccess
 
         public async Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
+            var categories = await _financeContext.Categories.Where(c => c.Expense).ToListAsync();
+
             var transactionEntities = await
                 _financeContext.Transactions
                 .Where(t => t.AccountId == accountId)
+                .Where(t => categories
+                    .Select(c=> c.Name)
+                    .Contains(t.CategoryName))
                 .OrderByDescending(t => t.Date)
                 .ToListAsync();
 

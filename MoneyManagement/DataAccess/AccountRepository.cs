@@ -45,7 +45,7 @@ namespace MoneyManagement.DataAccess
             return accounts;
         }
 
-        public async void SaveAccount(Account account)
+        public async Task SaveAccount(Account account)
         {
             var accountEntity = account.AccountToAccountEntity();
 

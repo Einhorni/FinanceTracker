@@ -5,6 +5,9 @@ using MoneyManagement.Models;
 using FinanceTracker.UIMappings;
 using MoneyManagement.DbContexts;
 using MoneyManagement.Entities;
+using Microsoft.Identity.Client;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using String = System.String;
 
 namespace FinanceTracker.Utilities
 {
@@ -14,18 +17,41 @@ namespace FinanceTracker.Utilities
         {
             if (accounts.Count > 0)
             {
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("Available Accounts:");
                 View.ShowAccounts(accounts);
                 Console.WriteLine("");
                 for (int i = 0; i <= accounts.Count - 1; i++)
                 {
                     Console.WriteLine($"{i + 1} - Show account: {accounts[i].Name}");
                 }
+            }
+            
+            if (accounts.Count > 1)
+            {
                 Console.WriteLine($"{accounts.Count + 1} - Make a transfer between accounts");
             }
+
             Console.WriteLine("");
 
             if (accounts.Count <= 6)
-                Console.WriteLine($"{accounts.Count +2} - Create a new account");
+            {
+                int choosableNumber;
+                switch (accounts.Count)
+                { 
+                    case 0: choosableNumber = 1; break;
+                    case 1: choosableNumber = 2; break;
+                    default: choosableNumber = accounts.Count + 2; break;
+                }
+
+                //if (accounts.Count == 0)
+                //    choosableNumber = 1;
+                //else choosableNumber = accounts.Count + 2;
+
+
+                Console.WriteLine($"{choosableNumber} - Create a new account");
+            }
+                
             
             Console.WriteLine($"9 - Exit ");
             Console.WriteLine("");
@@ -43,7 +69,8 @@ namespace FinanceTracker.Utilities
                         .Take(10)
                         .ToList();
 
-            Console.WriteLine($"");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance} {account.Currency}.");
             Console.WriteLine($"Last transactions:");
             foreach (Transaction transaction in accountTransactions)
             {
@@ -53,13 +80,13 @@ namespace FinanceTracker.Utilities
                 
                 //display transfers
                 //TODO: von AccountName
-                if(transaction.FromAccountId == account.Id)
-                    Console.WriteLine($"{date}: -{transaction.Amount}, {transaction.Category}");
-                ////display positive amounts
-                //else if (transaction.Amount > 0.0m)
-                //    Console.WriteLine($"{date}: +{transaction.Amount}, {transaction.Category}");
-                //display negative amounts
-                else
+                //if(transaction.FromAccountId == account.Id)
+                //    Console.WriteLine($"{date}: -{transaction.Amount}, {transaction.Category}");
+                //////display positive amounts
+                ////else if (transaction.Amount > 0.0m)
+                ////    Console.WriteLine($"{date}: +{transaction.Amount}, {transaction.Category}");
+                ////display negative amounts
+                //else
                     Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category}");
             }
         }
@@ -153,15 +180,21 @@ namespace FinanceTracker.Utilities
                 case "1":
                     //accounts.Add(new Bargeldkonto(name, balance, currency, Guid.Empty));
                     var bAccount = new Bargeldkonto(name, balance, currency, Guid.Empty);
-                    accountManager.SaveAccount(bAccount);
+                    var btransaction = new IrregularTransaction(balance, "Initial", bAccount.Id);
+                    //Wait() da Save Account ein Task ist. Hätte ich die Funktionen im Repo async gemacht, müsste ich return schreiben
+                    //da aber nichts zurückgegeben wird: Wait
+                    accountManager.SaveAccount(bAccount).Wait();
+                    accountManager.SaveTransactions([btransaction]).Wait();
                     break;
                 case "2":
                     string overDraftLimit = View.GetOverDraftLimit();
                     if (Int32.TryParse(overDraftLimit, out int validLimit))
                     {
                         //accounts.Add(new Girokonto(name, balance, currency, Guid.Empty, DateTime.Now, 0.0m));
-                        var GAccount = new Girokonto(name, balance, currency, Guid.Empty, DateTime.Now, 0.0m);
-                        accountManager.SaveAccount(GAccount);
+                        var gAccount = new Girokonto(name, balance, currency, Guid.Empty, DateTime.Now, validLimit);
+                        var gtransaction = new IrregularTransaction(balance, "Initial", gAccount.Id);
+                        accountManager.SaveAccount(gAccount).Wait();
+                        accountManager.SaveTransactions([gtransaction]).Wait();
                         break;
                     }
                     else
@@ -192,6 +225,7 @@ namespace FinanceTracker.Utilities
         public static string GetNewAccountType()
         {
             Console.WriteLine("");
+            Console.WriteLine("------------------------------");
             Console.WriteLine("1 - Cash Account");
             Console.WriteLine("2 - Bank Account");
             Console.WriteLine("9 - Main Menu");
@@ -214,6 +248,7 @@ namespace FinanceTracker.Utilities
         public static string GetAccountBalance()
         {
             Console.WriteLine("");
+            Console.WriteLine("------------------------------");
             Console.WriteLine("Enter current balance (xx.xx) and hit enter.");
             Console.WriteLine("");
             string balanceString = Console.ReadLine() ?? String.Empty;
@@ -222,6 +257,7 @@ namespace FinanceTracker.Utilities
         public static string GetAccoutCurreny()
         {
             Console.WriteLine("");
+            Console.WriteLine("------------------------------");
             Console.WriteLine("Enter a currency:");
             Console.WriteLine("Euro = e");
             Console.WriteLine("US Dollar = d");
@@ -246,88 +282,46 @@ namespace FinanceTracker.Utilities
         }
 
         
-        public static string GetCategoryString(List<string> listedCategories)
+        public static string GetCategoryNumberAsString(List<string> listedCategories)
         {
-            var amountOfCategories = listedCategories.Count();
-            
+            var amountOfCategories = listedCategories.Count()-1;
+            var listedCategoriesWithoutTransfer = listedCategories.Where(c => c != "Transfer");
+
+            Console.WriteLine("------------------------------");
             Console.WriteLine("Please choose a category:");
             Console.WriteLine("");
             for (int i = 0; i < amountOfCategories; i++)
             {
-                Console.WriteLine($"{listedCategories[i]} for {listedCategories[i]}");
+                Console.WriteLine($"{i+1} for {listedCategories[i]}");
             }
-            //Console.WriteLine("+ for an Income");
-            //Console.WriteLine("A for Art Supplies");
-            //Console.WriteLine("B for Books");
-            //Console.WriteLine("C for Clothes");
-            //Console.WriteLine("F for Fees");
-            //Console.WriteLine("G for Groceries");
-            //Console.WriteLine("H for Household");
-            //Console.WriteLine("I for Insurace");
-            //Console.WriteLine("O for Other Hobbies");
-            //Console.WriteLine("P for Personal Health");
-            //Console.WriteLine("S for Stram, Tv and Phone");
-            //Console.WriteLine("T for Taxes");
-            //Console.WriteLine("V for Vehicle and Fuel");
+
             Console.WriteLine("");
             string categoryNumberString = Console.ReadLine() ?? String.Empty;
             return categoryNumberString;
         }
 
-        public static async void TransactionMenu(Account account, List<Account> accounts, MoneyManagementService accountManager)
+        public static void TransactionMenu(Account account, List<Account> accounts, MoneyManagementService accountManager)
         {
             Console.WriteLine("");
-            Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance} {account.Currency}.");
             Console.WriteLine("Enter transaction amount. DON'T put a \"-\" in front.");
             Console.WriteLine("");
             string amountString = Console.ReadLine() ?? String.Empty;
 
-            var categories = await accountManager.GetCategories();
-
-
+            var categories = accountManager.GetCategories().Result;
 
             if (decimal.TryParse(amountString, out decimal result)) 
             {
-                //press a number of them
-                string categoryNumberString = GetCategoryString(categories);
-                Int32.TryParse(categoryNumberString, out int categoryNumber);
+                Int32.TryParse(GetCategoryNumberAsString(categories), out int categoryNumber);
 
-                if (
-                        categoryNumber >=1 && categoryNumber <= categories.Count
-                        //categoryNumberString.ToUpperInvariant() == "A" ||
-                        //categoryNumberString.ToUpperInvariant() == "B" ||
-                        //categoryNumberString.ToUpperInvariant() == "C" ||
-                        //categoryNumberString.ToUpperInvariant() == "F" ||
-                        //categoryNumberString.ToUpperInvariant() == "G" ||
-                        //categoryNumberString.ToUpperInvariant() == "H" ||
-                        //categoryNumberString.ToUpperInvariant() == "I" ||
-                        //categoryNumberString.ToUpperInvariant() == "O" ||
-                        //categoryNumberString.ToUpperInvariant() == "P" ||
-                        //categoryNumberString.ToUpperInvariant() == "S" ||
-                        //categoryNumberString.ToUpperInvariant() == "T" ||
-                        //categoryNumberString.ToUpperInvariant() == "V" ||
-                        //categoryNumberString.ToUpperInvariant() == "+"
-                    )
+                if (categoryNumber >=1 && categoryNumber <= categories.Count)
                 {
-                    //CategoryDTO category = UIMappings.MapToCategory (categoryNumberString);
-
                     //MoneyManagementFileService transactionManager = new MoneyManagementFileService(new FileTransactionRepository());
 
-                    //TODO: Überarbeiten: Income woander machen!
-                    //if (category == CategoryDTO.Income)
-                    //{
-                    //    //IrregularTransaction newTransaction = new(result, category, account.Id);
-                    //    IrregularTransaction newTransaction = new(result, category.ToString(), account.Id);
-                    //    account.Balance = account.AddAmount(result);
-                    //    transactionManager.SaveTransaction(newTransaction);
-                    //}
-
-                    //else
-                    //{
-                    IrregularTransaction newTransaction = new(result, categories[categoryNumber-1], account.Id);
+                    //TODO: Überarbeiten: Income woanders machen!
+                    
+                    IrregularTransaction newTransaction = new(-result, categories[categoryNumber-1], account.Id);
                     account.Balance = account.SubstractAmount(result);
-                    accountManager.SaveTransactions([newTransaction]);
-                    //} 
+                    accountManager.SaveTransactions([newTransaction]).Wait();
 
                     //MoneyManagementFileService accountManager = new (new FileAccountRepository());
                     //accountManager.SaveAccounts(accounts);
@@ -349,6 +343,7 @@ namespace FinanceTracker.Utilities
         public static string AfterTransactionMenu()
         {
             Console.WriteLine("");
+            Console.WriteLine("------------------------------");
             Console.WriteLine("1 - To enter another amount");
             Console.WriteLine("9 - To return to main menu");
             Console.WriteLine("");
@@ -359,13 +354,11 @@ namespace FinanceTracker.Utilities
         public static void AfterTransactionMenuLoop(string entry, Account account, List<Account>accounts, MoneyManagementService accountManager)
         {
             //MoneyManagementFileService transactionManager = new (new FileTransactionRepository());
-            
-            var transactions = accountManager.LoadTransactions(account.Id).Result;
-
             bool showMainMenu = false;
 
             do
             {
+                var transactions = accountManager.LoadTransactions(account.Id).Result;
                 ShowTransactions(account, transactions);
                 entry = View.AfterTransactionMenu();
 
@@ -392,7 +385,7 @@ namespace FinanceTracker.Utilities
                     new IrregularTransfer
                     (
                         -amount,
-                        "Transer",
+                        "Transfer",
                         fromAccount.Id,
                         toAccount.Id,
                         fromAccount.Id
@@ -402,7 +395,7 @@ namespace FinanceTracker.Utilities
                     new IrregularTransfer
                     (
                         amount,
-                        "Transer",
+                        "Transfer",
                         fromAccount.Id,
                         toAccount.Id,
                         toAccount.Id
@@ -410,7 +403,7 @@ namespace FinanceTracker.Utilities
 
 
                 //MoneyManagementFileService transactionManager = new MoneyManagementFileService(new FileTransactionRepository());
-                accountManager.SaveTransactions([transactionFrom, transactionTo]);
+                accountManager.SaveTransactions([transactionFrom, transactionTo]).Wait();
 
                 //MoneyManagementFileService accountManager = new(new FileAccountRepository());
                 //accountManager.SaveAccounts([fromAccount, toAccount]);
@@ -435,11 +428,13 @@ namespace FinanceTracker.Utilities
 
         public static List<Account> TransferMenu(List<Account>accounts, MoneyManagementService accountManager)
         {
-            for (int i = 0; i < accounts.Count; i++) 
+            Console.WriteLine("------------------------------");
+            for (int i = 0; i < accounts.Count; i++)
             {
-                Console.WriteLine($"{i+1} - Transfer FROM {accounts[i].Name}, {accounts[i].Balance}{accounts[i].Currency}");
+                Console.WriteLine($"{i + 1} - Transfer FROM {accounts[i].Name}, {accounts[i].Balance}{accounts[i].Currency}");
             }
-            
+            Console.WriteLine("");
+
             string fromAccountString = Console.ReadLine();
 
             if (Int32.TryParse(fromAccountString, out int fromAccRes))
@@ -450,10 +445,12 @@ namespace FinanceTracker.Utilities
                     Account fromAccount = accounts[fromAccRes - 1];
                     accounts.Remove(fromAccount);
 
+                    Console.WriteLine("------------------------------");
                     for (int i = 0; i < accounts.Count; i++)
                     {
                         Console.WriteLine($"{i + 1} - Transfer TO {accounts[i].Name}, {accounts[i].Balance}{accounts[i].Currency}");
                     }
+                    Console.WriteLine("");
 
                     string toAccountString = Console.ReadLine();
 
@@ -465,7 +462,10 @@ namespace FinanceTracker.Utilities
                             Account toAccount = accounts[toAccRes - 1];
                             accounts.Remove(toAccount);
 
+                            Console.WriteLine("------------------------------");
+                            Console.WriteLine($"Transfer between Account {fromAccount.Name} to {toAccount.Name}");
                             Console.WriteLine($"Enter the amount (xx.xx) (max. {fromAccount.Balance} possible)");
+                            Console.WriteLine("");
                             string amountString = Console.ReadLine() ?? String.Empty;
 
                             var newAccounts = SaveAccounts(amountString, accounts, fromAccount, toAccount, accountManager);

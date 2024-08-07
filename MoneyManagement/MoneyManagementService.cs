@@ -30,29 +30,26 @@ namespace MoneyManagement
         }
 
 
-        public void SaveAccount(Account account)
+        public Task SaveAccount(Account account)
         {
 
-            _accountRepository.SaveAccount(account);
+            return _accountRepository.SaveAccount(account);
         }
 
-
+        //ist möglich das hier mit async & await zu machen, es geht aber auch mit Task & return wie oben und unten
         public async Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
             var transactions = await _transactionRepository.LoadTransactions(accountId);
-            
-
             return transactions;
-
         }
 
 
-        public void SaveTransactions(List<Transaction> transactions)
+        public Task SaveTransactions(List<Transaction> transactions)
         {
-            _transactionRepository.SaveTransactions(transactions);
+            return _transactionRepository.SaveTransactions(transactions);
         }
 
-
+        //hier ist async & await wichtig, da ich eine Operation mit categories anfange
         public async Task<List<string>> GetCategories()
         {
             var categories = await _categoryRepository.GetCategories();

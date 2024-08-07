@@ -28,26 +28,27 @@ namespace MoneyManagement.DbContexts
         {
             modelBuilder.Entity<CategoryEntity>()
                 .HasData(
-                new CategoryEntity { Name = "Art Supplies" },
-                new CategoryEntity { Name = "Games" },
-                new CategoryEntity { Name = "Books" },
-                new CategoryEntity { Name = "Clothing" },
-                new CategoryEntity { Name = "Hygiene" },
-                new CategoryEntity { Name = "Other Fees" },
-                new CategoryEntity { Name = "Groceries" },
-                new CategoryEntity { Name = "Household" },
-                new CategoryEntity { Name = "Insurance" },
-                new CategoryEntity { Name = "Other Hobbies" },
-                new CategoryEntity { Name = "Health" },
-                new CategoryEntity { Name = "Stream and Tv" },
-                new CategoryEntity { Name = "Phone" },
-                new CategoryEntity { Name = "House" },
-                new CategoryEntity { Name = "Taxes" },
-                new CategoryEntity { Name = "Car & Fuel" },
-                new CategoryEntity { Name = "Salary" },
-                new CategoryEntity { Name = "Present" },
-                new CategoryEntity { Name = "Cashback" },
-                new CategoryEntity { Name = "Transer" }
+                new CategoryEntity { Name = "Art Supplies", Expense = true },
+                new CategoryEntity { Name = "Games", Expense = true },
+                new CategoryEntity { Name = "Books", Expense = true },
+                new CategoryEntity { Name = "Clothing", Expense = true },
+                new CategoryEntity { Name = "Hygiene", Expense = true },
+                new CategoryEntity { Name = "Other Fees", Expense = true },
+                new CategoryEntity { Name = "Groceries", Expense = true },
+                new CategoryEntity { Name = "Household", Expense = true },
+                new CategoryEntity { Name = "Insurance", Expense = true },
+                new CategoryEntity { Name = "Other Hobbies", Expense = true },
+                new CategoryEntity { Name = "Health", Expense = true },
+                new CategoryEntity { Name = "Stream and Tv", Expense = true },
+                new CategoryEntity { Name = "Phone", Expense = true },
+                new CategoryEntity { Name = "House", Expense = true },
+                new CategoryEntity { Name = "Taxes", Expense = true },
+                new CategoryEntity { Name = "Car & Fuel", Expense = true },
+                new CategoryEntity { Name = "Salary", Expense = true },
+                new CategoryEntity { Name = "Present", Expense = true },
+                new CategoryEntity { Name = "Cashback", Expense = false },
+                new CategoryEntity { Name = "Transfer", Expense = false },
+                new CategoryEntity { Name = "Income", Expense = false }
                 );
 
             modelBuilder.Entity<AccountEntity>()
