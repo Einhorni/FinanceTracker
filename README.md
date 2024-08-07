@@ -6,11 +6,10 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 ### Simple Finance Tracker (console app)
 * Add accounts and saving them -to a txt file-
 * Transfer money between two accounts and save it as transactions 
-* Make transcactions (expenses) and save them -in a text file-
+* Make transcactions (expenses & income) and save them -in a text file-
 * Load accounts and transactions and display them
 
-### Planned
-* Be able to enter income
+### Plannede
 * Code clean-up
 * Write tests
 * Create a MVC web app for easier handling
