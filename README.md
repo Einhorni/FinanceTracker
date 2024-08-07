@@ -4,22 +4,26 @@ There are lots of printables and excel tables for budgeting and keeping an overv
 Although they are great, I want to write a budgeting app (not a banking app) that does the same but is way less complicated to maintain and use for user.
 
 ### Simple Finance Tracker (console app)
-* adding accounts and saving them to a txt file
-* transfer money between two accounts and save them as transactions
-* make transcactions (income / expenses) and save them in a text file
+* Add accounts and saving them -to a txt file-
+* Transfer money between two accounts and save it as transactions 
+* Make transcactions (expenses) and save them -in a text file-
 * Load accounts and transactions and display them
 
 ### Planned
-* write tests
-* create a MVC web app for easier handling
+* Be able to enter income
+* Code clean-up
+* Write tests
+* Create a MVC web app for easier handling
 
 ### In Progress
-* maybe the app isn't working at the current stage
-* adding database functionalities and changing account infos to be saved
+* Be able to enter income
+* Show other accountname when displaying account to account transfers
 
 ### Programming concepts included 
 * Basic sytnax and classes, inheritance
 * Switches, if-statements and loops
 * IO with try/catch blocks, repositories, interfaces
 * Dependency injection, writing a Service
-* Seperated Logic from UI, only accessible through a service
+* Seperated UI from a combined Logic & DataAccess Layer which is only accessible through a service
+* Implemented a database with async functionality
+* Used extension methods for mapping
