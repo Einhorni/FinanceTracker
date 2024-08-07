@@ -4,9 +4,10 @@ There are lots of printables and excel tables for budgeting and keeping an overv
 Although they are great, I want to write a budgeting app (not a banking app) that does the same but is way less complicated to maintain and use for user.
 
 ### Simple Finance Tracker (console app)
-* Add accounts and saving them -to a txt file-
+* Evolved from storing data in a text file to storing data in a local database
+* Add accounts and saving them
 * Transfer money between two accounts and save it as transactions 
-* Make transcactions (expenses & income) and save them -in- -a- -textfile-
+* Make transcactions (expenses & income) and save them
 * Load accounts and transactions and display them
 
 ### Plannede
