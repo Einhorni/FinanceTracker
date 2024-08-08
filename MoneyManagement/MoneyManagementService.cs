@@ -47,12 +47,13 @@ namespace MoneyManagement
         }
 
         //hier ist async & await wichtig, da ich eine Operation mit categories anfange
-        public async Task<List<Category>> GetCategories()
+        public Task<List<Category>> GetCategories()
         {
-            var categories = await _categoryRepository.GetCategories();
+            return _categoryRepository.GetCategories();
             //var categoriesList = categories.Select(c => c.Name).ToList();
-            return categories;
         }
+
+
 
         //Factory-Methode: das wir nur für die Konsolenanwendung gebraucht, damit ich nicht ständig das Objekt kompliziert erzeugen muss, sondern nur MoneyManagementService.Create()
         //bei Websanwendungen kann ich dann dieses MoneyManagementDing per DI Container injizieren in der Program.cs

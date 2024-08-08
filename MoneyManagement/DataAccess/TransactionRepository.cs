@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MoneyManagement.DbContexts;
 using MoneyManagement.Entities;
-using MoneyManagement.Models;
 using Transaction = MoneyManagement.Models.Transaction;
 
 namespace MoneyManagement.DataAccess
@@ -50,7 +43,6 @@ namespace MoneyManagement.DataAccess
             foreach (var transaction in transactions)
             {
                 var transactionEntity = transaction.TransactionToTransactionEntity();
-                //var transaction = Mappings.TransactionToTransactionEntity(transactionDTO);
                 transactionEntities.Add(transactionEntity);
             }
 
