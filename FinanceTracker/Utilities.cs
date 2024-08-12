@@ -246,7 +246,7 @@ namespace FinanceTrackerConsole.Utilities
         public static string SaveTransactions(decimal amount, string transactionCategory, Account account, MoneyManagementService accountManager)
         {
             IrregularTransaction newTransaction = new(amount, transactionCategory, account.Id);
-            account.Balance = account.SubstractAmount(amount);
+            account.ChangeAmount(amount);
             return accountManager.SaveTransactions([newTransaction]).Result;
         }
 

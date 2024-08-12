@@ -14,14 +14,13 @@ try
 {
     MoneyManagementService accountManager = MoneyManagementService.Create();
 
-    View.MainLoop(accountManager);
+    //TODO: alles asyncen
+    /*await */View.MainLoop(accountManager);
 }
 catch (Exception ex)
 {
-    //Console.WriteLine($"An error occurred {ex}");
     Console.ForegroundColor = ConsoleColor.Red;
     Log.Error(ex, "An error ocurred");
-    //TODO: Logging implementieren
 }
 finally
 {

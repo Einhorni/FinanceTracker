@@ -38,18 +38,30 @@ namespace MoneyManagement
             return _accountRepository.SaveAccount(account);
         }
 
-        
+
+        //kein async (ist möglich, aber...), nur ein Task, weil nichts weiter mit dem Ergebnis gemacht wird -> avoid state machine (creates overhead)
+        //auf den Task wird dann in der Oberfläche mit Wait() (wenn void zurückkommt) oder Result (wenn es eine Rückgabe gibt) gewartet
         public Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
             return _transactionRepository.LoadTransactions(accountId);
         }
 
-        //kein async (ist möglich, aber...), nur ein Task, weil nichts weiter mit dem Ergebnis gemacht wird -> avoid state machine (creates overhead)
-        //auf den Task wird dann in der Oberfläche mit Wait() (wenn void zurückkommt) oder Result (wenn es eine Rückgabe gibt) gewartet
-        public Task<string> SaveTransactions(List<Transaction> transactions)
+        
+        public async Task<string> SaveTransactions(List<Transaction> transactions)
         {
-            return _transactionRepository.SaveTransactions(transactions);
+            foreach (Transaction transaction in transactions) 
+            {
+                var account = await LoadAccount(transaction.AccountId);
+                var notValid = account.TransactionNotValid(transaction);
+
+                if (notValid)
+                {
+                    return "Transfer not possible";
+                }
+            }
+            return await _transactionRepository.SaveTransactions(transactions);
         }
+
 
         //hier ist async & await wichtig, da ich eine Operation mit categories anfange
         public Task<List<Category>> GetCategories()

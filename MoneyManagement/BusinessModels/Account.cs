@@ -11,10 +11,10 @@
         public string Currency { get; set; }
 
 
-        public decimal AddAmount(decimal amount)
-        { return Balance + amount; }
-        public decimal SubstractAmount(decimal amount)
-        { return Balance - amount; }
+        public void ChangeAmount(decimal amount)
+        { Balance += amount; }
+
+        public abstract bool TransactionNotValid(Transaction transaction);
     }
 
     public class Girokonto : Account
@@ -34,6 +34,13 @@
             OverdraftLimit = overdraftLimit;
             DateOfCreation = dateOfCreation;
         }
+
+        public override bool TransactionNotValid(Transaction transaction)
+        {
+            if(transaction.Amount < 0)
+                return (Balance + OverdraftLimit) < transaction.Amount;
+            else return false;
+        }
     }
 
     public class Bargeldkonto : Account
@@ -49,6 +56,13 @@
             Balance = balance;
             Currency = currency;
             DateOfCreation = DateTime.Now;
+        }
+
+        public override bool TransactionNotValid(Transaction transaction)
+        {
+            if (transaction.Amount < 0)
+                return Balance < transaction.Amount;
+            else return false;
         }
     }
 

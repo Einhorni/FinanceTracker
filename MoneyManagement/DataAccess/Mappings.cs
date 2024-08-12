@@ -12,8 +12,11 @@ namespace MoneyManagement.DataAccess
     public static class Mappings
     {
         //Extension Method auf AccountEntity mit this
-        public static Account AccountEntityToAccount(this AccountEntity account, decimal balance)
+        public static Account AccountEntityToAccount(this AccountEntity account)
         {
+            var balance = account.Transactions
+                        .Select(t => t.Amount).Sum();
+
             //ist entweder Bargeldkto oder Girokonto, in Zukunft noch andere
             if (account.KindOfAccount == "Bargeldkonto")
             {

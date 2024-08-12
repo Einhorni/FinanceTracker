@@ -37,9 +37,7 @@ namespace MoneyManagement.DataAccess
             //Maps accountEntities to Account, while creating the Balance from its transactions
             var accounts = accountEntities
                 .Select(a =>
-                    a.AccountEntityToAccount(
-                        a.Transactions
-                        .Select(t => t.Amount).Sum()))
+                    a.AccountEntityToAccount())
                 .ToList();
 
             return accounts;
@@ -49,10 +47,11 @@ namespace MoneyManagement.DataAccess
         public async Task<Account> LoadAccount(Guid id)
         {
             var accountEntity = await _financeContext.Accounts
+                .Include(a => a.Transactions)
                 .Where(a => a.Id == id)
                 .FirstAsync();
 
-            var account = accountEntity.AccountEntityToAccount(0.0m); 
+            var account = accountEntity.AccountEntityToAccount(); 
 
             return account;
         }
