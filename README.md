@@ -10,13 +10,13 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 * Make transcactions (expenses & income) and save them
 * Load accounts and transactions and display them
 
-### Plannede
-* Code clean-up
+### Planned
 * Write tests
 * Create a MVC web app for easier handling
+* Implement Logger
+* Implement Error Handling
 
 ### In Progress
-* Be able to enter income
 * Show other accountname when displaying account to account transfers
 
 ### Programming concepts included 
