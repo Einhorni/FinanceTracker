@@ -12,7 +12,7 @@ namespace MoneyManagement.DataAccess
     {
 
         //repo pattern: nimmt business objekte entgegen oder gibt sie aus.
-            //load nimmt nichts oder id entgegen und gibt domain objet aus
+            //load nimmt nichts oder id entgegen und gibt domain objekt aus
             //save nimmt domainobjekt an und speichert es über dbcontext
             //es hat nichts mit Entities zu tun
         //repo gehört zur Datenebene
@@ -43,6 +43,18 @@ namespace MoneyManagement.DataAccess
                 .ToList();
 
             return accounts;
+        }
+
+
+        public async Task<Account> LoadAccount(Guid id)
+        {
+            var accountEntity = await _financeContext.Accounts
+                .Where(a => a.Id == id)
+                .FirstAsync();
+
+            var account = accountEntity.AccountEntityToAccount(0.0m); 
+
+            return account;
         }
 
         public async Task SaveAccount(Account account)

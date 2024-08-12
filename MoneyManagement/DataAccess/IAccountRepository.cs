@@ -10,6 +10,7 @@ namespace MoneyManagement.DataAccess
 {
     public interface IAccountRepository
     {
+        Task<Account> LoadAccount(Guid id);
         public Task<List<Account>> LoadAccounts();
         public Task SaveAccount(Account account);
     }

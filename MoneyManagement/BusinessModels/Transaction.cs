@@ -11,9 +11,8 @@ namespace MoneyManagement.Models
         public string Category { get; set; } = string.Empty;
         public Guid AccountId { get; set; }
 
-        //Alt: Sending/ReceivingAccount und nur TransferAccountId
-        public Guid? ToAccountId { get; set; }
-        public Guid? FromAccountId { get; set; }
+        public Guid? ReceivingAccountId { get; set; } = Guid.Empty;
+        public Guid? SendingAccountId { get; set; } = Guid.Empty;
     }
 
     //TODO: Unterschied wird im Moment beim Laden aus der DB nicht mehr beachtet
@@ -40,13 +39,13 @@ namespace MoneyManagement.Models
             Amount = amount;
             Date = DateTime.Now;
             Category = category;
-            FromAccountId = fromAccountId;
-            ToAccountId = toAccountId;
+            SendingAccountId = fromAccountId;
+            ReceivingAccountId = toAccountId;
             AccountId = accountId;
         }
     }
 
-    #region for later use
+    #region for later use?
     //class Regular : Transaction
     //{
     //    public decimal Amount { get; set; }

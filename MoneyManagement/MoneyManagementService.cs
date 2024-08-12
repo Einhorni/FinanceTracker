@@ -28,6 +28,11 @@ namespace MoneyManagement
         }
 
 
+        public Task<Account> LoadAccount(Guid id)
+        {
+            return _accountRepository.LoadAccount(id);
+        }
+
         public Task SaveAccount(Account account)
         {
             return _accountRepository.SaveAccount(account);
@@ -41,7 +46,7 @@ namespace MoneyManagement
 
         //kein async (ist möglich, aber...), nur ein Task, weil nichts weiter mit dem Ergebnis gemacht wird -> avoid state machine (creates overhead)
         //auf den Task wird dann in der Oberfläche mit Wait() (wenn void zurückkommt) oder Result (wenn es eine Rückgabe gibt) gewartet
-        public Task SaveTransactions(List<Transaction> transactions)
+        public Task<string> SaveTransactions(List<Transaction> transactions)
         {
             return _transactionRepository.SaveTransactions(transactions);
         }
@@ -50,7 +55,6 @@ namespace MoneyManagement
         public Task<List<Category>> GetCategories()
         {
             return _categoryRepository.GetCategories();
-            //var categoriesList = categories.Select(c => c.Name).ToList();
         }
 
 

@@ -36,18 +36,42 @@ namespace MoneyManagement.DataAccess
         }
 
 
-        public async Task SaveTransactions(List<Transaction> transactions)
+        public async Task<string> SaveTransactions(List<Transaction> transactions)
         {
-            var transactionEntities = new List<TransactionEntity>();
+            var transactionEntitiesFromDB = await _financeContext.Transactions.ToListAsync();
 
-            foreach (var transaction in transactions)
+            //Prüfung, ob negative Transaction valide
+            var negativeTransaction = transactions
+                .Where(t => t.Amount < 0).First();
+
+            var account = await _financeContext.Accounts
+                .Where(a => a.Id == negativeTransaction.AccountId).FirstAsync();
+
+            var accountBalance = transactionEntitiesFromDB
+                .Where(t => t.AccountId == account.Id)
+                .Select(t => t.Amount)
+                .Sum();
+
+            if (account.KindOfAccount == "Bargeldkonto" && accountBalance < negativeTransaction.Amount ||
+                account.KindOfAccount == "Girokonto" && (accountBalance + account.Overdraft) < negativeTransaction.Amount)
+                return "Transfer not possible";
+            
+            //Durchführung Transfer
+            else
             {
-                var transactionEntity = transaction.TransactionToTransactionEntity();
-                transactionEntities.Add(transactionEntity);
-            }
+                var transactionEntities = new List<TransactionEntity>();
 
-            await _financeContext.Transactions.AddRangeAsync(transactionEntities);
-            await _financeContext.SaveChangesAsync();
+                foreach (var transaction in transactions)
+                {
+                    var transactionEntity = transaction.TransactionToTransactionEntity();
+                    transactionEntities.Add(transactionEntity);
+                }
+
+                await _financeContext.Transactions.AddRangeAsync(transactionEntities);
+                await _financeContext.SaveChangesAsync();
+
+                return "Transfer saved";
+            }
         }
     }
 

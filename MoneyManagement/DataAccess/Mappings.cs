@@ -104,8 +104,8 @@ namespace MoneyManagement.DataAccess
                 Date = transactionDTO.Date,
                 Title = transactionDTO.Title ?? string.Empty,
                 AccountId = transactionDTO.AccountId,
-                FromAccountId = transactionDTO.FromAccountId,
-                ToAccountId = transactionDTO.ToAccountId
+                FromAccountId = transactionDTO.SendingAccountId,
+                ToAccountId = transactionDTO.ReceivingAccountId
             };
         }
 
@@ -117,8 +117,8 @@ namespace MoneyManagement.DataAccess
                     TransactionId = transactionEntity.Id,
                     AccountId = transactionEntity.AccountId,
                     Amount = transactionEntity.Amount,
-                    FromAccountId = transactionEntity.FromAccountId,
-                    ToAccountId = transactionEntity.ToAccountId,
+                    SendingAccountId = transactionEntity.FromAccountId,
+                    ReceivingAccountId = transactionEntity.ToAccountId,
                     Category = transactionEntity.CategoryName,
                     Date = transactionEntity.Date,
                     Title = transactionEntity.Title

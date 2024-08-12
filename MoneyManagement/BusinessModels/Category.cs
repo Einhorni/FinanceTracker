@@ -11,6 +11,7 @@ namespace MoneyManagement.Models
     public class Category
     {
         public string Name { get; set; } = string.Empty;
+
         [Required]
         public bool Expense { get; set; }
     }

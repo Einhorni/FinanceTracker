@@ -9,7 +9,9 @@ namespace FinanceTrackerConsole.Utilities
         public static string GetOverDraftLimit()
         {
             Console.WriteLine("");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter the overdraft limit (xx.xx) and hit enter.");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("");
             string overdraftLimit = Console.ReadLine() ?? String.Empty;
             return overdraftLimit;
@@ -32,7 +34,9 @@ namespace FinanceTrackerConsole.Utilities
         public static string GetAccoutName()
         {
             Console.WriteLine("");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("To enter a new Account, type in the name and hit enter.");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("9 - Main Menu");
             Console.WriteLine("");
             string name = Console.ReadLine() ?? String.Empty;
@@ -45,7 +49,9 @@ namespace FinanceTrackerConsole.Utilities
         {
             Console.WriteLine("");
             Console.WriteLine("------------------------------");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter current balance (xx.xx) and hit enter.");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("");
             string balanceString = Console.ReadLine() ?? String.Empty;
             return balanceString;
@@ -55,21 +61,23 @@ namespace FinanceTrackerConsole.Utilities
         public static string GetAccoutCurreny()
         {
             Console.WriteLine("");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("------------------------------");
             Console.WriteLine("Enter a currency:");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Euro = e");
             Console.WriteLine("US Dollar = d");
             Console.WriteLine("");
             string currencyString = Console.ReadLine() ?? String.Empty;
 
-            if (currencyString != "e" || currencyString != "d")
-            {
-                return String.Empty;
-            }
-            else
+            if (currencyString == "e" || currencyString == "d")
             {
                 var currency = UIMappings.MapToCurrencyString(currencyString);
                 return currency;
+            }
+            else
+            {
+                return String.Empty;
             }
         }
 
@@ -92,9 +100,11 @@ namespace FinanceTrackerConsole.Utilities
         public static void ListCatgories(List<string> categories, string typeOfCategory)
         {
             Console.WriteLine("");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("------------------------------");
             Console.WriteLine("");
             Console.WriteLine($"What kind of {typeOfCategory}:");
+            Console.ForegroundColor = ConsoleColor.White;
             for (int i = 0; i <= categories.Count - 1; i++)
             {
                 Console.WriteLine($"{i + 1} - {categories[i]}");
@@ -106,9 +116,11 @@ namespace FinanceTrackerConsole.Utilities
         public static string GetTransactionAmount(string kindOfAmount)
         {
             Console.WriteLine("");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("------------------------------");
             Console.WriteLine($"Enter {kindOfAmount}.");
             Console.WriteLine("");
+            Console.ForegroundColor = ConsoleColor.White;
 
             var incomeString = Console.ReadLine() ?? String.Empty;
 
@@ -120,7 +132,7 @@ namespace FinanceTrackerConsole.Utilities
         {
             var accountTransactions =
                     transactions
-                        .Where(t => t.FromAccountId == account.Id || t.ToAccountId == account.Id || t.AccountId == account.Id)
+                        .Where(t => t.SendingAccountId == account.Id || t.ReceivingAccountId == account.Id || t.AccountId == account.Id)
                         .OrderByDescending(t => t.Date)
                         .Take(10)
                         .ToList();
@@ -143,6 +155,7 @@ namespace FinanceTrackerConsole.Utilities
 
         public static string GetTransferAmount(Account fromAccount, Account toAccount)
         {
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("------------------------------");
             Console.WriteLine($"Transfer between Account {fromAccount.Name} to {toAccount.Name}");
             Console.WriteLine($"Enter the amount (xx.xx) (max. {fromAccount.Balance} possible)");
@@ -153,6 +166,7 @@ namespace FinanceTrackerConsole.Utilities
 
         public static void ShowNotEnoughMoney()
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("------------------------------");
             Console.WriteLine("You don't have enough money");
             Console.WriteLine("No transaction made");
@@ -172,18 +186,32 @@ namespace FinanceTrackerConsole.Utilities
         }
 
 
-        public static void ShowTransactions(Account account, List<Transaction> transactions)
+        public static void ShowTransactions(Account account, List<Transaction> transactions, MoneyManagementService accountManager)
         {
             List<Transaction> accountTransactions = GetAccountTransactions(account, transactions);
 
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("------------------------------");
             Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance} {account.Currency}.");
             Console.WriteLine($"Last transactions:");
             foreach (Transaction transaction in accountTransactions)
             {
+                string otherAccountText = "";
+                if (transaction.SendingAccountId == account.Id)
+                {
+                    var otherAccount = accountManager.LoadAccount(transaction.SendingAccountId.Value).Result;
+                    otherAccountText = $"to {otherAccount.Name}";
+                }
+                else if (transaction.ReceivingAccountId == account.Id)
+                {
+                    var otherAccount = accountManager.LoadAccount(transaction.ReceivingAccountId.Value).Result;
+                    otherAccountText = $"from {otherAccount.Name}";
+                }
+
                 string date = transaction.Date.ToString("dddd, dd.MMMM.yyyy HH:mm:ss");
-                Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category}");
+                Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category} {otherAccountText}");
             }
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
 
@@ -200,16 +228,26 @@ namespace FinanceTrackerConsole.Utilities
                     accountType = "Girokonto";
                 else
                     accountType = "";
-                Console.WriteLine($"{i + 1}. {accountType}: {accounts[i].Name}, Balance {accounts[i].Balance} {accounts[i].Currency.ToString()}");
+
+                string overdraftLimit;
+                if (accounts[i] is Girokonto)
+                {
+                    Girokonto account =  accounts[i] as Girokonto;
+                    overdraftLimit = $", Overdraft-Limit = {account.OverdraftLimit}";
+                }
+                else { overdraftLimit = ""; }
+
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"{i + 1}. {accountType}: {accounts[i].Name}, Balance {accounts[i].Balance} {accounts[i].Currency.ToString()} {overdraftLimit}");
             }
         }
 
 
-        public static void SaveTransactions(decimal amount, string transactionCategory, Account account, MoneyManagementService accountManager)
+        public static string SaveTransactions(decimal amount, string transactionCategory, Account account, MoneyManagementService accountManager)
         {
             IrregularTransaction newTransaction = new(amount, transactionCategory, account.Id);
             account.Balance = account.SubstractAmount(amount);
-            accountManager.SaveTransactions([newTransaction]).Wait();
+            return accountManager.SaveTransactions([newTransaction]).Result;
         }
 
 
@@ -241,16 +279,22 @@ namespace FinanceTrackerConsole.Utilities
                             toAccount.Id
                         );
 
-                    accountManager.SaveTransactions([transactionFrom, transactionTo]).Wait();
+                    var messageFromRepo = accountManager.SaveTransactions([transactionFrom, transactionTo]).Result;
+                    Console.WriteLine($"{messageFromRepo}");
+
+                    Console.WriteLine($"New balance account {fromAccount.Name} = {fromAccount.Balance} {fromAccount.Currency}.");
+                    Console.WriteLine($"New balance account {toAccount.Name} = {toAccount.Balance} {toAccount.Currency}.");
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Not enough money.");
                 }
             }
 
             else
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("You failed horribly at this simple task.");
             }
         }
@@ -266,7 +310,8 @@ namespace FinanceTrackerConsole.Utilities
                     //Wait() da Save Account ein Task ist. Hätte ich die Funktionen im Repo async gemacht, müsste ich return schreiben
                     //da aber nichts zurückgegeben wird: Wait
                     accountManager.SaveAccount(bAccount).Wait();
-                    accountManager.SaveTransactions([btransaction]).Wait();
+                    var messageFromRepo = accountManager.SaveTransactions([btransaction]).Result;
+                    Console.WriteLine($"{messageFromRepo}");
                     break;
                 case "2":
                     string overDraftLimit = GetOverDraftLimit();
@@ -276,15 +321,18 @@ namespace FinanceTrackerConsole.Utilities
                         var gAccount = new Girokonto(name, balance, currency, Guid.Empty, DateTime.Now, validLimit);
                         var gtransaction = new IrregularTransaction(balance, "Initial", gAccount.Id);
                         accountManager.SaveAccount(gAccount).Wait();
-                        accountManager.SaveTransactions([gtransaction]).Wait();
+                        messageFromRepo = accountManager.SaveTransactions([gtransaction]).Result;
+                        Console.WriteLine($"{messageFromRepo}");
                         break;
                     }
                     else
                     {
+                        Console.ForegroundColor = ConsoleColor.Cyan;
                         Console.WriteLine("You failed horribly at this simple task!");
                         break;
                     }
                 default:
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine("You failed horribly at this simple task!");
                     break;
             }

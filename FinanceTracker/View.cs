@@ -2,6 +2,7 @@
 using MoneyManagement.Models;
 using String = System.String;
 using FinanceTrackerConsole.Utilities;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FinanceTracker.View
 {
@@ -44,6 +45,7 @@ namespace FinanceTracker.View
                     else
                     {
                         Console.WriteLine("");
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("You failed horribly. Try again!");
                         Console.WriteLine("");
                     }
@@ -53,6 +55,7 @@ namespace FinanceTracker.View
                 else
                 {
                     Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("You failed horribly. Try again");
                     Console.WriteLine("");
                 }
@@ -66,10 +69,14 @@ namespace FinanceTracker.View
             if (accounts.Count > 0)
             {
                 Console.WriteLine("------------------------------");
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Available Accounts:");
 
                 Utilities.ShowAccounts(accounts);
-                
+                Console.WriteLine("");
+                Console.WriteLine("------------------------------");
+                Console.ForegroundColor = ConsoleColor.White;
+
                 Console.WriteLine("");
                 for (int i = 0; i <= accounts.Count - 1; i++)
                 {
@@ -106,7 +113,7 @@ namespace FinanceTracker.View
         {
             var transactions = accountManager.LoadTransactions(account.Id).Result;
 
-            Utilities.ShowTransactions(account, transactions);
+            Utilities.ShowTransactions(account, transactions, accountManager);
 
             Console.WriteLine("");
             Console.WriteLine("1 - Enter an expense");
@@ -128,45 +135,82 @@ namespace FinanceTracker.View
 
             else if (entry == "9") { }
             else
-            { Console.WriteLine("You failed horribly at this simple task!"); }
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("You failed horribly at this simple task!"); 
+            }
         }
 
 
 
-        public static void CreateAccountMenu(List<string> currencies, MoneyManagementService accountManager)//(List<AccountDTO> accounts)
+        public static void CreateAccountMenu(List<string> currencies, MoneyManagementService accountManager)
         {
             string name = Utilities.GetAccoutName();
 
-            if (name == "9") { }
-            if (name == "")
+            switch (name)
             {
-                Console.WriteLine("You failed horribly at this simple task!");
-            }
+                case "9": break;
+                case "": break;
+                default:
+                    string balanceString = Utilities.GetAccountBalance();
 
-            else
-            {
-                string balanceString = Utilities.GetAccountBalance();
-
-                if (!(decimal.TryParse(balanceString, out decimal balance)))
-                {
-                    Console.WriteLine("You failed horribly at this simple task!");
-                }
-
-                else
-                {
-                    var currency = Utilities.GetAccoutCurreny() ?? String.Empty;
-
-                    if (!currencies.Exists(c => c == currency))
+                    if (!(decimal.TryParse(balanceString, out decimal balance)))
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("You failed horribly at this simple task!");
                     }
+
                     else
-                    { 
-                        string accountTypeString = Utilities.GetNewAccountType();
-                        Utilities.SaveAccount(accountTypeString, name, balance, currency, accountManager);                        
-                    }
-                }
-            }            
+                    {
+                        var currency = Utilities.GetAccoutCurreny() ?? String.Empty;
+
+                        if (!currencies.Exists(c => c == currency))
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("You failed horribly at this simple task!");
+                        }
+                        else
+                        {
+                            string accountTypeString = Utilities.GetNewAccountType();
+                            Utilities.SaveAccount(accountTypeString, name, balance, currency, accountManager);
+                        }
+                    };
+                    break;
+            }
+            
+            //if (name == "9") { }
+            //else if (name == "")
+            //{
+            //    Console.ForegroundColor = ConsoleColor.Red;
+            //    Console.WriteLine("You failed horribly at this simple task!");
+            //}
+
+            //else
+            //{
+            //    string balanceString = Utilities.GetAccountBalance();
+
+            //    if (!(decimal.TryParse(balanceString, out decimal balance)))
+            //    {
+            //        Console.ForegroundColor = ConsoleColor.Red;
+            //        Console.WriteLine("You failed horribly at this simple task!");
+            //    }
+
+            //    else
+            //    {
+            //        var currency = Utilities.GetAccoutCurreny() ?? String.Empty;
+
+            //        if (!currencies.Exists(c => c == currency))
+            //        {
+            //            Console.ForegroundColor = ConsoleColor.Red;
+            //            Console.WriteLine("You failed horribly at this simple task!");
+            //        }
+            //        else
+            //        { 
+            //            string accountTypeString = Utilities.GetNewAccountType();
+            //            Utilities.SaveAccount(accountTypeString, name, balance, currency, accountManager);                        
+            //        }
+            //    }
+            //}            
         }
 
 
@@ -194,16 +238,24 @@ namespace FinanceTracker.View
 
                     Console.WriteLine("");
                     Console.WriteLine("------------------------------");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"{incomeAmount} {account.Currency} {transactionCategory} added");
                 }
                 else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("You failed horribly at this simple task!");
+                }
 
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine($"Current balance = {account.Balance}");
                 Console.WriteLine("");
             }
             else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("You failed horribly at this simple task!");
+            }
         }
 
 
@@ -228,7 +280,7 @@ namespace FinanceTracker.View
             do
             {
                 var transactions = accountManager.LoadTransactions(account.Id).Result;
-                Utilities.ShowTransactions(account, transactions);
+                Utilities.ShowTransactions(account, transactions, accountManager);
                 var entry = AfterTransactionMenu("income", "expense");
 
                 switch (entry)
@@ -243,6 +295,7 @@ namespace FinanceTracker.View
                         showMainMenu = true;
                         break;
                     default:
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("You failed horribly at this simple task!");
                         break;
                 }
@@ -274,16 +327,24 @@ namespace FinanceTracker.View
 
                             Console.WriteLine("");
                             Console.WriteLine("------------------------------");
+                            Console.ForegroundColor = ConsoleColor.Cyan;
                             Console.WriteLine($"{amount} {account.Currency} for {transactionCategory} substracted");
                         }
                     }
                 }
                 else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("You failed horribly at this simple task!");
+                }
             }
             else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("You failed horribly at this simple task!");
-            
+            }
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"Current balance = {account.Balance}");
             Console.WriteLine("");
         }
@@ -296,7 +357,7 @@ namespace FinanceTracker.View
             do
             {
                 var transactions = accountManager.LoadTransactions(account.Id).Result;
-                Utilities.ShowTransactions(account, transactions);
+                Utilities.ShowTransactions(account, transactions, accountManager);
                 var entry = AfterTransactionMenu("expense", "income");
 
                 switch (entry)
@@ -311,6 +372,7 @@ namespace FinanceTracker.View
                         showMainMenu = true;
                         break;
                     default:
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("You failed horribly at this simple task!");
                         break;
                 }
@@ -347,6 +409,7 @@ namespace FinanceTracker.View
             }
             else
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("You failed horribly at this simple task.");
             }
         }
