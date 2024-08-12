@@ -9,15 +9,15 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 * Transfer money between two accounts and save it as transactions 
 * Make transcactions (expenses & income) and save them
 * Load accounts and transactions and display them
+* Negative Transaction validation (not below 0)
 
 ### Planned
 * Write tests
+* Seperate DAL from BLL
 * Create a MVC web app for easier handling
-* Implement Logger
-* Implement Error Handling
 
 ### In Progress
-* Show other accountname when displaying account to account transfers
+* Make hole application async (delete and completely forget about .Wait() and .Result
 
 ### Programming concepts included 
 * Basic sytnax and classes, inheritance
@@ -27,3 +27,4 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 * Seperated UI from a combined Logic & DataAccess Layer which is only accessible through a service
 * Implemented a database with async functionality
 * Used extension methods for mapping
+* Global Error Handling and Logger (last is overkill but I wanted to try it in a console application rather than a ASP.NET Core app)
