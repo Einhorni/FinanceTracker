@@ -3,18 +3,19 @@ using MoneyManagement.Models;
 using String = System.String;
 using FinanceTrackerConsole.Utilities;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.Http.Headers;
 
 namespace FinanceTracker.View
 {
     internal static class View
     {
-        public static void MainLoop(MoneyManagementService accountManager)
+        public async static Task MainLoop(MoneyManagementService accountManager)
         {
             bool mainExit = false;
 
             do
             {
-                var accounts = accountManager.LoadAccounts().Result;
+                var accounts = await accountManager.LoadAccounts();
                 string entry = MainMenu(accounts);
                 //int entryAsInt; --> kann man sich durch out var entryAsInt sparen
                 bool mainMenuEntryIsInt = Int32.TryParse(entry, out var entryAsInt);
@@ -23,21 +24,21 @@ namespace FinanceTracker.View
                 {
                     if (entryAsInt <= accounts.Count)
                     {
-                        AccountMenu(accounts[entryAsInt - 1], accounts, accountManager);
+                        await AccountMenu(accounts[entryAsInt - 1], accounts, accountManager);
                     }
 
                     //Show Transfer between two accounts Menu only if there are at least 2 accounts
                     else if (entryAsInt == accounts.Count + 1 && accounts.Count > 1)
                     {
-                        TransferMenu(accounts, accountManager);
+                        await TransferMenu(accounts, accountManager);
                     }
 
                     //Choosable number differs depending on the amount of accounts
                     else if (entryAsInt == accounts.Count + 1 && accounts.Count == 1)
-                        CreateAccountMenu(["Dollar", "Euro"], accountManager);
+                        await CreateAccountMenu(["Dollar", "Euro"], accountManager);
 
                     else if (entryAsInt == accounts.Count + 2 && accounts.Count > 1)
-                        CreateAccountMenu(["Dollar", "Euro"], accountManager);
+                        await CreateAccountMenu(["Dollar", "Euro"], accountManager);
 
                     else if (entryAsInt == (9))
                         mainExit = true;
@@ -109,11 +110,11 @@ namespace FinanceTracker.View
         }
 
 
-        public static void AccountMenu(Account account, List<Account> accounts, MoneyManagementService accountManager)
+        public async static Task AccountMenu(Account account, List<Account> accounts, MoneyManagementService accountManager)
         {
-            var transactions = accountManager.LoadTransactions(account.Id).Result;
+            var transactions = await accountManager.LoadTransactions(account.Id);
 
-            Utilities.ShowTransactions(account, transactions, accountManager);
+            await Utilities.ShowTransactions(account, transactions, accountManager);
 
             Console.WriteLine("");
             Console.WriteLine("1 - Enter an expense");
@@ -121,29 +122,48 @@ namespace FinanceTracker.View
             Console.WriteLine("9 - Main Menu");
             string entry = Console.ReadLine();
 
-            if (entry == "1")
+            switch(entry)
             {
-                TransactionMenu(account, accountManager);
-                AfterTransactionMenuLoop(account, accountManager);
+                case "1":
+                    await TransactionMenu(account, accountManager);
+                    await AfterTransactionMenuLoop(account, accountManager);
+                    break;
+                case "2":
+                    await IncomeMenu(account, accountManager);
+                    await AfterIncomeMenuLoop(account, accountManager);
+                    break;
+                case "9":
+                    break;
+                default:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("You failed horribly at this simple task!");
+                    break;
             }
 
-            if (entry == "2")
-            {
-                IncomeMenu(account, accountManager);
-                AfterIncomeMenuLoop(account, accountManager);
-            }
 
-            else if (entry == "9") { }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("You failed horribly at this simple task!"); 
-            }
+            //if (entry == "1")
+            //{
+            //    await TransactionMenu(account, accountManager);
+            //    await AfterTransactionMenuLoop(account, accountManager);
+            //}
+
+            //else if (entry == "2")
+            //{
+            //    await IncomeMenu(account, accountManager);
+            //    await AfterIncomeMenuLoop(account, accountManager);
+            //}
+
+            //else if (entry == "9") { }
+            //else
+            //{
+            //    Console.ForegroundColor = ConsoleColor.Red;
+            //    Console.WriteLine("You failed horribly at this simple task!"); 
+            //}
         }
 
 
 
-        public static void CreateAccountMenu(List<string> currencies, MoneyManagementService accountManager)
+        public async static Task CreateAccountMenu(List<string> currencies, MoneyManagementService accountManager)
         {
             string name = Utilities.GetAccoutName();
 
@@ -172,51 +192,17 @@ namespace FinanceTracker.View
                         else
                         {
                             string accountTypeString = Utilities.GetNewAccountType();
-                            Utilities.SaveAccount(accountTypeString, name, balance, currency, accountManager);
+                            await Utilities.SaveAccount(accountTypeString, name, balance, currency, accountManager);
                         }
                     };
                     break;
-            }
-            
-            //if (name == "9") { }
-            //else if (name == "")
-            //{
-            //    Console.ForegroundColor = ConsoleColor.Red;
-            //    Console.WriteLine("You failed horribly at this simple task!");
-            //}
-
-            //else
-            //{
-            //    string balanceString = Utilities.GetAccountBalance();
-
-            //    if (!(decimal.TryParse(balanceString, out decimal balance)))
-            //    {
-            //        Console.ForegroundColor = ConsoleColor.Red;
-            //        Console.WriteLine("You failed horribly at this simple task!");
-            //    }
-
-            //    else
-            //    {
-            //        var currency = Utilities.GetAccoutCurreny() ?? String.Empty;
-
-            //        if (!currencies.Exists(c => c == currency))
-            //        {
-            //            Console.ForegroundColor = ConsoleColor.Red;
-            //            Console.WriteLine("You failed horribly at this simple task!");
-            //        }
-            //        else
-            //        { 
-            //            string accountTypeString = Utilities.GetNewAccountType();
-            //            Utilities.SaveAccount(accountTypeString, name, balance, currency, accountManager);                        
-            //        }
-            //    }
-            //}            
+            }                     
         }
 
 
-        public static void IncomeMenu(Account account, MoneyManagementService accountManager)
+        public async static Task IncomeMenu(Account account, MoneyManagementService accountManager)
         {
-            var categories= accountManager.GetCategories().Result;
+            var categories= await accountManager.GetCategories();
             var incomeCategories = categories
                 .Where(c => !c.Expense)
                 .Select(c => c.Name)
@@ -234,7 +220,7 @@ namespace FinanceTracker.View
                 {
                     var transactionCategory = incomeCategories[categoryNumber - 1];
 
-                    Utilities.SaveTransactions(incomeAmount, transactionCategory, account, accountManager);
+                    await Utilities.SaveTransactions(incomeAmount, transactionCategory, account, accountManager);
 
                     Console.WriteLine("");
                     Console.WriteLine("------------------------------");
@@ -273,23 +259,23 @@ namespace FinanceTracker.View
         }
 
 
-        public static void AfterIncomeMenuLoop(Account account, MoneyManagementService accountManager)
+        public async static Task AfterIncomeMenuLoop(Account account, MoneyManagementService accountManager)
         {
             bool showMainMenu = false;
 
             do
             {
-                var transactions = accountManager.LoadTransactions(account.Id).Result;
-                Utilities.ShowTransactions(account, transactions, accountManager);
+                var transactions = await accountManager.LoadTransactions(account.Id);
+                await Utilities.ShowTransactions(account, transactions, accountManager);
                 var entry = AfterTransactionMenu("income", "expense");
 
                 switch (entry)
                 {
                     case "1":
-                        IncomeMenu(account, accountManager);
+                        await IncomeMenu(account, accountManager);
                         break;
                     case "2":
-                        TransactionMenu(account, accountManager);
+                        await TransactionMenu(account, accountManager);
                         break;
                     case "9":
                         showMainMenu = true;
@@ -303,9 +289,9 @@ namespace FinanceTracker.View
         }
 
 
-        public static void TransactionMenu(Account account, MoneyManagementService accountManager)
+        public async static Task TransactionMenu(Account account, MoneyManagementService accountManager)
         {
-            var categories = accountManager.GetCategories().Result;
+            var categories = await accountManager.GetCategories();
             var (categoryNumberString, listedCategories) = Utilities.GetChosenCategoryNumberStringAndAmountOfCategories(categories);
             
             Int32.TryParse(categoryNumberString, out int categoryNumber);
@@ -323,7 +309,7 @@ namespace FinanceTracker.View
                     if (amountIsValid)
                     {
                         {
-                            Utilities.SaveTransactions(-amount, transactionCategory, account, accountManager);
+                            await Utilities.SaveTransactions(-amount, transactionCategory, account, accountManager);
 
                             Console.WriteLine("");
                             Console.WriteLine("------------------------------");
@@ -350,23 +336,23 @@ namespace FinanceTracker.View
         }
 
 
-        public static void AfterTransactionMenuLoop(Account account, MoneyManagementService accountManager)
+        public async static Task AfterTransactionMenuLoop(Account account, MoneyManagementService accountManager)
         {
             bool showMainMenu = false;
 
             do
             {
-                var transactions = accountManager.LoadTransactions(account.Id).Result;
-                Utilities.ShowTransactions(account, transactions, accountManager);
+                var transactions = await accountManager.LoadTransactions(account.Id);
+                await Utilities.ShowTransactions(account, transactions, accountManager);
                 var entry = AfterTransactionMenu("expense", "income");
 
                 switch (entry)
                 {
                     case "1":
-                        TransactionMenu(account, accountManager);
+                        await TransactionMenu(account, accountManager);
                         break;
                     case "2":
-                        IncomeMenu(account, accountManager);
+                        await IncomeMenu(account, accountManager);
                         break;
                     case "9":
                         showMainMenu = true;
@@ -380,7 +366,7 @@ namespace FinanceTracker.View
         }
 
 
-        public static void TransferMenu(List<Account>accounts, MoneyManagementService accountManager)
+        public async static Task TransferMenu(List<Account>accounts, MoneyManagementService accountManager)
         {
             var fromAccountString = Utilities.GetChosenAccountStringForTransfer(accounts, "FROM");
 
@@ -402,7 +388,7 @@ namespace FinanceTracker.View
 
                             var amountString = Utilities.GetTransferAmount(fromAccount, toAccount);
 
-                            Utilities.SaveAccounts(amountString, fromAccount, toAccount, accountManager);
+                            await Utilities.SaveAccounts(amountString, fromAccount, toAccount, accountManager);
                         } 
                     }
                 }

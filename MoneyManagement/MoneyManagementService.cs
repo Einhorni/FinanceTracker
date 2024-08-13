@@ -39,8 +39,6 @@ namespace MoneyManagement
         }
 
 
-        //kein async (ist möglich, aber...), nur ein Task, weil nichts weiter mit dem Ergebnis gemacht wird -> avoid state machine (creates overhead)
-        //auf den Task wird dann in der Oberfläche mit Wait() (wenn void zurückkommt) oder Result (wenn es eine Rückgabe gibt) gewartet
         public Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
             return _transactionRepository.LoadTransactions(accountId);

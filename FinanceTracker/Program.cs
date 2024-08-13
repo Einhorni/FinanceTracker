@@ -15,7 +15,7 @@ try
     MoneyManagementService accountManager = MoneyManagementService.Create();
 
     //TODO: alles asyncen
-    /*await */View.MainLoop(accountManager);
+    await View.MainLoop(accountManager);
 }
 catch (Exception ex)
 {

@@ -186,7 +186,7 @@ namespace FinanceTrackerConsole.Utilities
         }
 
 
-        public static void ShowTransactions(Account account, List<Transaction> transactions, MoneyManagementService accountManager)
+        public async static Task ShowTransactions(Account account, List<Transaction> transactions, MoneyManagementService accountManager)
         {
             List<Transaction> accountTransactions = GetAccountTransactions(account, transactions);
 
@@ -199,12 +199,12 @@ namespace FinanceTrackerConsole.Utilities
                 string otherAccountText = "";
                 if (transaction.SendingAccountId == account.Id)
                 {
-                    var otherAccount = accountManager.LoadAccount(transaction.SendingAccountId.Value).Result;
+                    var otherAccount = await accountManager.LoadAccount(transaction.SendingAccountId.Value);
                     otherAccountText = $"to {otherAccount.Name}";
                 }
                 else if (transaction.ReceivingAccountId == account.Id)
                 {
-                    var otherAccount = accountManager.LoadAccount(transaction.ReceivingAccountId.Value).Result;
+                    var otherAccount = await accountManager.LoadAccount(transaction.ReceivingAccountId.Value);
                     otherAccountText = $"from {otherAccount.Name}";
                 }
 
@@ -243,15 +243,15 @@ namespace FinanceTrackerConsole.Utilities
         }
 
 
-        public static string SaveTransactions(decimal amount, string transactionCategory, Account account, MoneyManagementService accountManager)
+        public async static Task<string> SaveTransactions(decimal amount, string transactionCategory, Account account, MoneyManagementService accountManager)
         {
             IrregularTransaction newTransaction = new(amount, transactionCategory, account.Id);
             account.ChangeAmount(amount);
-            return accountManager.SaveTransactions([newTransaction]).Result;
+            return await accountManager.SaveTransactions([newTransaction]);
         }
 
 
-        public static void SaveAccounts(string amountString, Account fromAccount, Account toAccount, MoneyManagementService accountManager)
+        public async static Task SaveAccounts(string amountString, Account fromAccount, Account toAccount, MoneyManagementService accountManager)
         {
             if (decimal.TryParse(amountString, out decimal amount))
             {
@@ -279,8 +279,11 @@ namespace FinanceTrackerConsole.Utilities
                             toAccount.Id
                         );
 
-                    var messageFromRepo = accountManager.SaveTransactions([transactionFrom, transactionTo]).Result;
+                    var messageFromRepo = await accountManager.SaveTransactions([transactionFrom, transactionTo]);
                     Console.WriteLine($"{messageFromRepo}");
+
+                    fromAccount.ChangeAmount(-amount);
+                    toAccount.ChangeAmount(amount);
 
                     Console.WriteLine($"New balance account {fromAccount.Name} = {fromAccount.Balance} {fromAccount.Currency}.");
                     Console.WriteLine($"New balance account {toAccount.Name} = {toAccount.Balance} {toAccount.Currency}.");
@@ -300,17 +303,15 @@ namespace FinanceTrackerConsole.Utilities
         }
 
 
-        public static void SaveAccount(string accountTypeString, string name, decimal balance, string currency, MoneyManagementService accountManager)
+        public async static Task SaveAccount(string accountTypeString, string name, decimal balance, string currency, MoneyManagementService accountManager)
         {
             switch (accountTypeString)
             {
                 case "1":
                     var bAccount = new Bargeldkonto(name, balance, currency, Guid.Empty);
                     var btransaction = new IrregularTransaction(balance, "Initial", bAccount.Id);
-                    //Wait() da Save Account ein Task ist. Hätte ich die Funktionen im Repo async gemacht, müsste ich return schreiben
-                    //da aber nichts zurückgegeben wird: Wait
-                    accountManager.SaveAccount(bAccount).Wait();
-                    var messageFromRepo = accountManager.SaveTransactions([btransaction]).Result;
+                    await accountManager.SaveAccount(bAccount);
+                    var messageFromRepo = await accountManager.SaveTransactions([btransaction]);
                     Console.WriteLine($"{messageFromRepo}");
                     break;
                 case "2":
@@ -320,8 +321,8 @@ namespace FinanceTrackerConsole.Utilities
                         //accounts.Add(new Girokonto(name, balance, currency, Guid.Empty, DateTime.Now, 0.0m));
                         var gAccount = new Girokonto(name, balance, currency, Guid.Empty, DateTime.Now, validLimit);
                         var gtransaction = new IrregularTransaction(balance, "Initial", gAccount.Id);
-                        accountManager.SaveAccount(gAccount).Wait();
-                        messageFromRepo = accountManager.SaveTransactions([gtransaction]).Result;
+                        await accountManager.SaveAccount(gAccount);
+                        messageFromRepo = await accountManager.SaveTransactions([gtransaction]);
                         Console.WriteLine($"{messageFromRepo}");
                         break;
                     }
