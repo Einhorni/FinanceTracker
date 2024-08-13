@@ -16,8 +16,6 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 * Seperate DAL from BLL
 * Create a MVC web app for easier handling
 
-### In Progress
-* Make hole application async (delete and completely forget about .Wait() and .Result
 
 ### Programming concepts included 
 * Basic sytnax and classes, inheritance
