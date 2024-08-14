@@ -12,7 +12,6 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 * Negative Transaction validation (not below 0)
 
 ### Planned
-* Write tests
 * Seperate DAL from BLL
 * Create a MVC web app for easier handling
 
@@ -26,3 +25,4 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 * Implemented a database with async functionality
 * Used extension methods for mapping
 * Global Error Handling and Logger (last is overkill but I wanted to try it in a console application rather than a ASP.NET Core app)
+* Unit Tests
