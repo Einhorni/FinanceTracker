@@ -14,7 +14,8 @@
         public void ChangeAmount(decimal amount)
         { Balance += amount; }
 
-        public abstract bool TransactionNotValid(Transaction transaction);
+        //public abstract bool TransactionNotValid(Transaction transaction);
+        public abstract bool TransactionValid(Transaction transaction);
     }
 
     public class Girokonto : Account
@@ -22,7 +23,7 @@
         //for later use
         public decimal OverdraftLimit { get; set; } 
         public Girokonto() { }
-        public Girokonto(string name, decimal balance, string currency, Guid id, DateTime dateOfCreation, decimal overdraftLimit = 0.0m)
+        public Girokonto(string name, decimal balance, string currency, Guid id, decimal overdraftLimit = 0.0m)
         {
 
             if (id == Guid.Empty)
@@ -32,14 +33,14 @@
             Balance = balance;
             Currency = currency;
             OverdraftLimit = overdraftLimit;
-            DateOfCreation = dateOfCreation;
+            DateOfCreation = DateTime.Now;
         }
 
-        public override bool TransactionNotValid(Transaction transaction)
+
+        public override bool TransactionValid(Transaction transaction)
         {
-            if(transaction.Amount < 0)
-                return (Balance + OverdraftLimit) < transaction.Amount;
-            else return false;
+            if (transaction.Amount > 0) { return true; }
+            else { return (-Balance - OverdraftLimit) <= transaction.Amount; } 
         }
     }
 
@@ -58,11 +59,11 @@
             DateOfCreation = DateTime.Now;
         }
 
-        public override bool TransactionNotValid(Transaction transaction)
+
+        public override bool TransactionValid(Transaction transaction)
         {
-            if (transaction.Amount < 0)
-                return Balance < transaction.Amount;
-            else return false;
+            if (transaction.Amount > 0) { return true; }
+            else { return (-Balance) <= transaction.Amount; }
         }
     }
 

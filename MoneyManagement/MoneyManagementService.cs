@@ -50,9 +50,10 @@ namespace MoneyManagement
             foreach (Transaction transaction in transactions) 
             {
                 var account = await LoadAccount(transaction.AccountId);
-                var notValid = account.TransactionNotValid(transaction);
+                //var notValid = account.TransactionNotValid(transaction);
+                var valid = account.TransactionValid(transaction);
 
-                if (notValid)
+                if (!valid)
                 {
                     return "Transfer not possible";
                 }

@@ -115,17 +115,13 @@ namespace MoneyManagement.DataAccess
 
         public static Transaction TransactionEntityToTransaction(this TransactionEntity transactionEntity)
         {
-            return new Transaction
-                {
-                    TransactionId = transactionEntity.Id,
-                    AccountId = transactionEntity.AccountId,
-                    Amount = transactionEntity.Amount,
-                    SendingAccountId = transactionEntity.FromAccountId,
-                    ReceivingAccountId = transactionEntity.ToAccountId,
-                    Category = transactionEntity.CategoryName,
-                    Date = transactionEntity.Date,
-                    Title = transactionEntity.Title
-                };
+            var transaction = new Transaction(transactionEntity.Amount, transactionEntity.CategoryName, transactionEntity.AccountId);
+            transaction.TransactionId = transactionEntity.Id;
+            transaction.SendingAccountId = transactionEntity.FromAccountId;
+            transaction.ReceivingAccountId = transactionEntity.ToAccountId;
+            transaction.Date = transactionEntity.Date;
+            transaction.Title = transactionEntity.Title;
+            return transaction;
         }
     }
 }

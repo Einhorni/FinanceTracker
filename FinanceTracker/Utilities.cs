@@ -245,7 +245,7 @@ namespace FinanceTrackerConsole.Utilities
 
         public async static Task<string> SaveTransactions(decimal amount, string transactionCategory, Account account, MoneyManagementService accountManager)
         {
-            IrregularTransaction newTransaction = new(amount, transactionCategory, account.Id);
+            Transaction newTransaction = new(amount, transactionCategory, account.Id);
             account.ChangeAmount(amount);
             return await accountManager.SaveTransactions([newTransaction]);
         }
@@ -260,7 +260,7 @@ namespace FinanceTrackerConsole.Utilities
                 if (validAmount)
                 {
                     var transactionFrom =
-                    new IrregularTransfer
+                    new Transaction
                     (
                         -amount,
                         "Transfer",
@@ -270,7 +270,7 @@ namespace FinanceTrackerConsole.Utilities
                     );
 
                     var transactionTo =
-                        new IrregularTransfer
+                        new Transaction
                         (
                             amount,
                             "Transfer",
@@ -309,7 +309,7 @@ namespace FinanceTrackerConsole.Utilities
             {
                 case "1":
                     var bAccount = new Bargeldkonto(name, balance, currency, Guid.Empty);
-                    var btransaction = new IrregularTransaction(balance, "Initial", bAccount.Id);
+                    var btransaction = new Transaction(balance, "Initial", bAccount.Id);
                     await accountManager.SaveAccount(bAccount);
                     var messageFromRepo = await accountManager.SaveTransactions([btransaction]);
                     Console.WriteLine($"{messageFromRepo}");
@@ -319,8 +319,8 @@ namespace FinanceTrackerConsole.Utilities
                     if (Int32.TryParse(overDraftLimit, out int validLimit))
                     {
                         //accounts.Add(new Girokonto(name, balance, currency, Guid.Empty, DateTime.Now, 0.0m));
-                        var gAccount = new Girokonto(name, balance, currency, Guid.Empty, DateTime.Now, validLimit);
-                        var gtransaction = new IrregularTransaction(balance, "Initial", gAccount.Id);
+                        var gAccount = new Girokonto(name, balance, currency, Guid.Empty, validLimit);
+                        var gtransaction = new Transaction(balance, "Initial", gAccount.Id);
                         await accountManager.SaveAccount(gAccount);
                         messageFromRepo = await accountManager.SaveTransactions([gtransaction]);
                         Console.WriteLine($"{messageFromRepo}");

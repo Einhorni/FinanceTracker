@@ -19,9 +19,12 @@ namespace MoneyManagement.DbContexts
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=FinanceTracker;Trusted_Connection=True;MultipleActiveResultSets=true");
-            //"Server=(localdb)\\mssqllocaldb;Database=FinanceTracker;Trusted_Connection=True;MultipleActiveResultSets=true"
-            //"Data Source=Finances.db"
+            //Connection Timout, falls DB nicht erreichbar nach 30 Sekunden
+            //Command Timout, falls eine SQL-Abfrage zu lange dauert nach 60 Sekunden, Standard nach EF Core sind 30 Sek.
+            optionsBuilder.UseSqlServer(
+                "Server=(localdb)\\mssqllocaldb;Database=FinanceTracker;Trusted_Connection=True;MultipleActiveResultSets=true; Connection Timeout=20",
+                sqlServerOptions => sqlServerOptions.CommandTimeout(60));
+            //für Verwendung einer SQLite DB "Data Source=Finances.db"
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
