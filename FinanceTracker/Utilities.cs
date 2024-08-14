@@ -70,7 +70,7 @@ namespace FinanceTrackerConsole.Utilities
             Console.WriteLine("");
             string currencyString = Console.ReadLine() ?? String.Empty;
 
-            if (currencyString == "e" || currencyString == "d")
+            if (currencyString == "e" || currencyString == "d") // CodeReview: prüfung zu upperInvariant, so das man kleion und großbuchstaben nehmen kann.
             {
                 var currency = UIMappings.MapToCurrencyString(currencyString);
                 return currency;
@@ -85,12 +85,12 @@ namespace FinanceTrackerConsole.Utilities
         public static (string, List<string>) GetChosenCategoryNumberStringAndAmountOfCategories(List<Category> categories)
         {
             var listedCategories = categories
-                .Where(c => c.Expense && c.Name != "Transfer")
+                .Where(c => c.Expense && c.Name != "Transfer") // CodeReview: eventuell magic string
                 .Select(c => c.Name).ToList();
 
-            ListCatgories(listedCategories, "category");
+            ListCatgories(listedCategories, "category"); // CodeReview: Hä?!
 
-            Console.WriteLine("");
+            Console.WriteLine(""); // CodeReview: für Leerzeile, geht auch ohne Parameter. Suchen und ersetzen verwenden.
             string categoryNumberString = Console.ReadLine() ?? String.Empty;
 
             return (categoryNumberString, listedCategories);
@@ -176,7 +176,7 @@ namespace FinanceTrackerConsole.Utilities
         public static bool ValidateAmount(decimal amount, Account account)
         {
             if (account is Bargeldkonto && account.Balance < amount ||
-                account is Girokonto && (account.Balance + ((account as Girokonto).OverdraftLimit) < amount))
+                account is Girokonto && (account.Balance + ((account as Girokonto).OverdraftLimit) < amount)) // CodeReview: bei is expression kann eine variable genommen werden. account is GiroKonto [Variable]
             {
                 ShowNotEnoughMoney();
                 return false;
@@ -196,19 +196,20 @@ namespace FinanceTrackerConsole.Utilities
             Console.WriteLine($"Last transactions:");
             foreach (Transaction transaction in accountTransactions)
             {
+                // CodeReview: Logikfehler, hier soll was anderes geschehen, als passiert. Gruß Keksi!
                 string otherAccountText = "";
                 if (transaction.SendingAccountId == account.Id)
                 {
-                    var otherAccount = await accountManager.LoadAccount(transaction.SendingAccountId.Value);
+                    var otherAccount = await accountManager.LoadAccount(transaction.SendingAccountId.Value); // CodeReview: null prüfung nicht vergessen
                     otherAccountText = $"to {otherAccount.Name}";
                 }
                 else if (transaction.ReceivingAccountId == account.Id)
                 {
-                    var otherAccount = await accountManager.LoadAccount(transaction.ReceivingAccountId.Value);
+                    var otherAccount = await accountManager.LoadAccount(transaction.ReceivingAccountId.Value); // CodeReview: null prüfung nicht vergessen
                     otherAccountText = $"from {otherAccount.Name}";
                 }
 
-                string date = transaction.Date.ToString("dddd, dd.MMMM.yyyy HH:mm:ss");
+                string date = transaction.Date.ToString("dddd, dd.MMMM.yyyy HH:mm:ss"); // CodeReview: Datumsformat?! Montag, 14.Oktober.2024  würde hier glaube ich rauskommen.
                 Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category} {otherAccountText}");
             }
             Console.ForegroundColor = ConsoleColor.White;
@@ -230,7 +231,7 @@ namespace FinanceTrackerConsole.Utilities
                     accountType = "";
 
                 string overdraftLimit;
-                if (accounts[i] is Girokonto)
+                if (accounts[i] is Girokonto)// CodeReview: bei is expression kann eine variable genommen werden. account is GiroKonto [Variable]
                 {
                     Girokonto account =  accounts[i] as Girokonto;
                     overdraftLimit = $", Overdraft-Limit = {account.OverdraftLimit}";

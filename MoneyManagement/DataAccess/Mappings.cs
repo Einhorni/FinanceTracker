@@ -11,7 +11,12 @@ namespace MoneyManagement.DataAccess
    
     public static class Mappings
     {
+        // CodeReview: wiedere löschen
+        public const string magic = "magic";
+
         //Extension Method auf AccountEntity mit this
+        // CodeReview: Magic-Strings durch constanten ersetzen.
+        // nicht glütigen Fall mit Exception quittieren. Beispiel: NotImplementException
         public static Account AccountEntityToAccount(this AccountEntity account)
         {
             var balance = account.Transactions
@@ -60,39 +65,40 @@ namespace MoneyManagement.DataAccess
             };
         }
 
+        // CodeReview: bei input null exception
 
         public static AccountEntity AccountToAccountEntity(this Account accountDto)
         {
             if (accountDto == null) return null;
 
-            if (accountDto is Bargeldkonto)
+            if (accountDto is Bargeldkonto bar) // CodeReview: (is [Type] [Variable])  statt späteren var [Variable] = x as [Type]
             {
-                var bar = accountDto as Bargeldkonto;
+                //var bar = accountDto as Bargeldkonto;
                 return new AccountEntity
                 {
                     Name = bar.Name,
                     Currency = bar.Currency.ToString(),
-                    KindOfAccount = nameof(Bargeldkonto),
+                    KindOfAccount = nameof(Bargeldkonto), // CodeReview: statt nameof, magic constants verwenden
                     DateOfCreation = bar.DateOfCreation,
                     Id = bar.Id
                 };
             };
 
-            if (accountDto is Girokonto)
+            if (accountDto is Girokonto) // CodeReview: (is [Type] [Variable])  statt späteren var [Variable] = x as [Type]
             {
                 var giro = accountDto as Girokonto;
                 return new AccountEntity
                 {
                     Name = giro.Name,
                     Currency = giro.Currency.ToString(),
-                    KindOfAccount = nameof(Girokonto),
+                    KindOfAccount = nameof(Girokonto), // CodeReview: statt nameof, magic constants verwenden
                     DateOfCreation = giro.DateOfCreation,
                     Id = giro.Id,
                     Overdraft = giro.OverdraftLimit,
                 };
             }
 
-            else return null;
+            else return null; // CodeReview: mit Exception quittieren
             
         }
 
@@ -112,7 +118,7 @@ namespace MoneyManagement.DataAccess
             };
         }
 
-
+        // CodeReview: object initializer (siehe methode oben drüber) verwenden. (Diese geschweiften Klammern)
         public static Transaction TransactionEntityToTransaction(this TransactionEntity transactionEntity)
         {
             var transaction = new Transaction(transactionEntity.Amount, transactionEntity.CategoryName, transactionEntity.AccountId);

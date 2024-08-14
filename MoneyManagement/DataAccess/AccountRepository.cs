@@ -43,7 +43,8 @@ namespace MoneyManagement.DataAccess
             return accounts;
         }
 
-
+        // CodeReview: Function schlägt fehl, wenn id unbekannt.
+        // bei nicht vorhanden sein, null zurückgeben und in der Schicht oben drüber adequat als User-Fehler behandeln. "Datensatz nicht vorhanden", oder ähnlich
         public async Task<Account> LoadAccount(Guid id)
         {
             var accountEntity = await _financeContext.Accounts
@@ -56,6 +57,8 @@ namespace MoneyManagement.DataAccess
             return account;
         }
 
+        // CodeReview: prüfen ob input null ist und wenn ja ArgumentNullException werfen
+        // Update inmplementieren
         public async Task SaveAccount(Account account)
         {
             var accountEntity = account.AccountToAccountEntity();

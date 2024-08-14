@@ -18,7 +18,7 @@ namespace FinanceTracker.View
                 var accounts = await accountManager.LoadAccounts();
                 string entry = MainMenu(accounts);
                 //int entryAsInt; --> kann man sich durch out var entryAsInt sparen
-                bool mainMenuEntryIsInt = Int32.TryParse(entry, out var entryAsInt);
+                bool mainMenuEntryIsInt = Int32.TryParse(entry, out var entryAsInt); // CodeReview: kann in das if selbst, variable unnötig. var keyword in betracht ziehen.
 
                 if (mainMenuEntryIsInt)
                 {
@@ -94,13 +94,14 @@ namespace FinanceTracker.View
 
             if (accounts.Count <= 6)
             {
-                int newAccountEntry;
+                int newAccountEntry; // CodeReview: über eine switch-Expression nachdenken. VS hilft beim konvertieren.
                 switch (accounts.Count)
                 { 
                     case 0: newAccountEntry = 1; break;
                     case 1: newAccountEntry = 2; break;
                     default: newAccountEntry = accounts.Count + 2; break;
                 }
+
                 Console.WriteLine($"{newAccountEntry} - Create a new account");
             }
             
@@ -139,26 +140,6 @@ namespace FinanceTracker.View
                     Console.WriteLine("You failed horribly at this simple task!");
                     break;
             }
-
-
-            //if (entry == "1")
-            //{
-            //    await TransactionMenu(account, accountManager);
-            //    await AfterTransactionMenuLoop(account, accountManager);
-            //}
-
-            //else if (entry == "2")
-            //{
-            //    await IncomeMenu(account, accountManager);
-            //    await AfterIncomeMenuLoop(account, accountManager);
-            //}
-
-            //else if (entry == "9") { }
-            //else
-            //{
-            //    Console.ForegroundColor = ConsoleColor.Red;
-            //    Console.WriteLine("You failed horribly at this simple task!"); 
-            //}
         }
 
 
@@ -176,10 +157,9 @@ namespace FinanceTracker.View
 
                     if (!(decimal.TryParse(balanceString, out decimal balance)))
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.ForegroundColor = ConsoleColor.Red; // CodeReview: Kandidate für eine Methode, weil Codewiederholung
                         Console.WriteLine("You failed horribly at this simple task!");
                     }
-
                     else
                     {
                         var currency = Utilities.GetAccoutCurreny() ?? String.Empty;
@@ -288,13 +268,43 @@ namespace FinanceTracker.View
             } while (!showMainMenu);
         }
 
+        // CodeReview: beide methoden zu einer machen.
+        public async static Task AfterTransactionMenuLoop(Account account, MoneyManagementService accountManager /*string p1, string p2*/)
+        {
+            bool showMainMenu = false;
+            //string caseTransactionMenu = p1 == "expense" ? "1" : "2";
+            //var caseIncome
+            do
+            {
+                var transactions = await accountManager.LoadTransactions(account.Id);
+                await Utilities.ShowTransactions(account, transactions, accountManager);
+                var entry = AfterTransactionMenu("expense", "income");
+
+                switch (entry)
+                {
+                    case "1":
+                        await TransactionMenu(account, accountManager);
+                        break;
+                    case "2":
+                        await IncomeMenu(account, accountManager);
+                        break;
+                    case "9":
+                        showMainMenu = true;
+                        break;
+                    default:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("You failed horribly at this simple task!");
+                        break;
+                }
+            } while (!showMainMenu);
+        }
 
         public async static Task TransactionMenu(Account account, MoneyManagementService accountManager)
         {
             var categories = await accountManager.GetCategories();
             var (categoryNumberString, listedCategories) = Utilities.GetChosenCategoryNumberStringAndAmountOfCategories(categories);
             
-            Int32.TryParse(categoryNumberString, out int categoryNumber);
+            Int32.TryParse(categoryNumberString, out int categoryNumber); // CodeReview: TryParse Ergebnis nicht berücksichtig
 
             if (categoryNumber >=1 && categoryNumber <= (listedCategories.Count))
             {
@@ -336,34 +346,7 @@ namespace FinanceTracker.View
         }
 
 
-        public async static Task AfterTransactionMenuLoop(Account account, MoneyManagementService accountManager)
-        {
-            bool showMainMenu = false;
-
-            do
-            {
-                var transactions = await accountManager.LoadTransactions(account.Id);
-                await Utilities.ShowTransactions(account, transactions, accountManager);
-                var entry = AfterTransactionMenu("expense", "income");
-
-                switch (entry)
-                {
-                    case "1":
-                        await TransactionMenu(account, accountManager);
-                        break;
-                    case "2":
-                        await IncomeMenu(account, accountManager);
-                        break;
-                    case "9":
-                        showMainMenu = true;
-                        break;
-                    default:
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("You failed horribly at this simple task!");
-                        break;
-                }
-            } while (!showMainMenu);
-        }
+        
 
 
         public async static Task TransferMenu(List<Account>accounts, MoneyManagementService accountManager)

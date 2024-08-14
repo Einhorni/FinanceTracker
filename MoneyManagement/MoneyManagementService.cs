@@ -27,7 +27,7 @@ namespace MoneyManagement
             return _accountRepository.LoadAccounts();
         }
 
-
+        // CodeReview: null für nicht vorhanden Datensatz in Erwägung ziehen
         public Task<Account> LoadAccount(Guid id)
         {
             return _accountRepository.LoadAccount(id);
@@ -44,7 +44,8 @@ namespace MoneyManagement
             return _transactionRepository.LoadTransactions(accountId);
         }
 
-        
+        // CodeReview: ggf. ResultType anlegen, 2 properties. Success: bool, ErrorMessage: string
+        // Nuget: CSharpFunctionalExtensions  (Result-Type)
         public async Task<string> SaveTransactions(List<Transaction> transactions)
         {
             foreach (Transaction transaction in transactions) 
@@ -55,7 +56,7 @@ namespace MoneyManagement
 
                 if (!valid)
                 {
-                    return "Transfer not possible";
+                    return "Transfer not possible"; // CodeReview: Genauere Fehlermeld für user zurückgeben. Konto überzogen
                 }
             }
             return await _transactionRepository.SaveTransactions(transactions);

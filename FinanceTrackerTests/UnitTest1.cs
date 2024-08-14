@@ -10,7 +10,8 @@ using System.Data;
 
 namespace FinanceTrackerTests
 {
-
+    // CodeReview: Klassennamen anpassen. überlicherweise xxxTests
+    // ggf. in andere TestKlassen auslagern
     public class UnitTest1
     {
         //EF + Repo Kram muss man nicht testen

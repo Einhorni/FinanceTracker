@@ -4,7 +4,7 @@ namespace FinanceTracker.UIMappings
 {
     internal class UIMappings
     {
-        public static string MapToCurrencyString(string currencyString)
+        public static string MapToCurrencyString(string currencyString) // CodeReview: input werte ggf normalisieren
         {
             switch (currencyString)
             {

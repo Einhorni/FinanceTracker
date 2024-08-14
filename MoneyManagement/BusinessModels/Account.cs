@@ -6,15 +6,15 @@
 
         public Guid Id;
         public string Name { get; set; } = string.Empty;
-        public decimal Balance { get; set; }
+        public decimal Balance { get; set; } 
         public DateTime DateOfCreation { get; set; }
-        public string Currency { get; set; }
+        public string Currency { get; set; } // CodeReview: defaultWert erwartet, der nicht null ist
 
 
         public void ChangeAmount(decimal amount)
         { Balance += amount; }
 
-        //public abstract bool TransactionNotValid(Transaction transaction);
+        //public abstract bool TransactionNotValid(Transaction transaction); // CodeReview: auskommentierter Code!
         public abstract bool TransactionValid(Transaction transaction);
     }
 
@@ -26,9 +26,12 @@
         public Girokonto(string name, decimal balance, string currency, Guid id, decimal overdraftLimit = 0.0m)
         {
 
-            if (id == Guid.Empty)
+            if (id == Guid.Empty) // CodeReview: Möglichkeit der If-Expression: Id = (id == Guid.Empty) ? Guid.NewGuid() : id;
                 Id = Guid.NewGuid();
             else Id = id;
+
+            
+
             Name = name;
             Balance = balance;
             Currency = currency;
@@ -50,13 +53,13 @@
         public Bargeldkonto(string name, decimal balance, string currency, Guid id)
         {
 
-            if (id == Guid.Empty)
+            if (id == Guid.Empty) // CodeReview: Möglichkeit der If-Expression: Id = (id == Guid.Empty) ? Guid.NewGuid() : id;
                 Id = Guid.NewGuid();
             else Id = id;
             Name = name;
             Balance = balance;
             Currency = currency;
-            DateOfCreation = DateTime.Now;
+            DateOfCreation = DateTime.Now; // CodeReview: Wegen Zeitzonen, überlegen man UtcNow nutzen kann.
         }
 
 

@@ -12,7 +12,7 @@ namespace MoneyManagement.Entities
     {
         [Required]
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // CodeReview: nicht notwendig. Weil Datenbank kann keinen Key für nvarchar generieren. nur für zahlen oder Guids
         public string Name { get; set; } = string.Empty;
         [Required]
         public bool Expense {  get; set; }

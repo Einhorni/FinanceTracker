@@ -14,6 +14,8 @@ namespace MoneyManagement.DataAccess
             _financeContext = financeContext ?? throw new ArgumentNullException(nameof(financeContext));
         }
 
+        // CodeReview: Unnötigen Filter entfernen (Catergories)
+        // Wenn Filter gebraucht wird, dann in eine separate Repository Function packen. ggf. mit filter - parameter
         public async Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
             var categories = await _financeContext.Categories./*Where(c => c.Expense).*/ToListAsync();
@@ -35,7 +37,8 @@ namespace MoneyManagement.DataAccess
             return transactions;
         }
 
-
+        // CodeReview: return nur Task, Und Statusmeldungen den überliegenden Schichten überlassen
+        // leere input liste prüfen und ggf. vorzeitiges return.
         public async Task<string> SaveTransactions(List<Transaction> transactions)
         {
             var transactionEntities = new List<TransactionEntity>();
