@@ -6,6 +6,6 @@ namespace MoneyManagement.DataAccess
     public interface ITransactionRepository
     {
         Task <List<Transaction>> LoadTransactions(Guid accountId);
-        Task <string> SaveTransactions(List<Transaction> transactions);
+        Task SaveTransactions(List<Transaction> transactions);
     }
 }

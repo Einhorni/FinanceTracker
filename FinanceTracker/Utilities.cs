@@ -8,11 +8,11 @@ namespace FinanceTrackerConsole.Utilities
     {
         public static string GetOverDraftLimit()
         {
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter the overdraft limit (xx.xx) and hit enter.");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("");
+            Console.WriteLine();
             string overdraftLimit = Console.ReadLine() ?? String.Empty;
             return overdraftLimit;
         }
@@ -20,12 +20,12 @@ namespace FinanceTrackerConsole.Utilities
 
         public static string GetNewAccountType()
         {
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.WriteLine("------------------------------");
             Console.WriteLine("1 - Cash Account");
             Console.WriteLine("2 - Bank Account");
             Console.WriteLine("9 - Main Menu");
-            Console.WriteLine("");
+            Console.WriteLine();
             string accountType = Console.ReadLine() ?? String.Empty;
             return accountType;
         }
@@ -33,26 +33,26 @@ namespace FinanceTrackerConsole.Utilities
 
         public static string GetAccoutName()
         {
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("To enter a new Account, type in the name and hit enter.");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("9 - Main Menu");
-            Console.WriteLine("");
+            Console.WriteLine();
             string name = Console.ReadLine() ?? String.Empty;
-            Console.WriteLine("");
+            Console.WriteLine();
             return name;
         }
 
 
         public static string GetAccountBalance()
         {
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.WriteLine("------------------------------");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter current balance (xx.xx) and hit enter.");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("");
+            Console.WriteLine();
             string balanceString = Console.ReadLine() ?? String.Empty;
             return balanceString;
         }
@@ -60,17 +60,17 @@ namespace FinanceTrackerConsole.Utilities
 
         public static string GetAccoutCurreny()
         {
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("------------------------------");
             Console.WriteLine("Enter a currency:");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Euro = e");
             Console.WriteLine("US Dollar = d");
-            Console.WriteLine("");
+            Console.WriteLine();
             string currencyString = Console.ReadLine() ?? String.Empty;
 
-            if (currencyString == "e" || currencyString == "d") // CodeReview: prüfung zu upperInvariant, so das man kleion und großbuchstaben nehmen kann.
+            if (currencyString.ToUpperInvariant() == "e" || currencyString.ToUpperInvariant() == "d")
             {
                 var currency = UIMappings.MapToCurrencyString(currencyString);
                 return currency;
@@ -84,13 +84,15 @@ namespace FinanceTrackerConsole.Utilities
 
         public static (string, List<string>) GetChosenCategoryNumberStringAndAmountOfCategories(List<Category> categories)
         {
+            const string transferItem = "Transfer";
+            
             var listedCategories = categories
-                .Where(c => c.Expense && c.Name != "Transfer") // CodeReview: eventuell magic string
+                .Where(c => c.Expense && c.Name != transferItem)
                 .Select(c => c.Name).ToList();
 
-            ListCatgories(listedCategories, "category"); // CodeReview: Hä?!
+            ListCatgories(listedCategories, "expense category");
 
-            Console.WriteLine(""); // CodeReview: für Leerzeile, geht auch ohne Parameter. Suchen und ersetzen verwenden.
+            Console.WriteLine();
             string categoryNumberString = Console.ReadLine() ?? String.Empty;
 
             return (categoryNumberString, listedCategories);
@@ -99,27 +101,27 @@ namespace FinanceTrackerConsole.Utilities
 
         public static void ListCatgories(List<string> categories, string typeOfCategory)
         {
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("------------------------------");
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.WriteLine($"What kind of {typeOfCategory}:");
             Console.ForegroundColor = ConsoleColor.White;
             for (int i = 0; i <= categories.Count - 1; i++)
             {
                 Console.WriteLine($"{i + 1} - {categories[i]}");
             }
-            Console.WriteLine("");
+            Console.WriteLine();
         }
 
 
         public static string GetTransactionAmount(string kindOfAmount)
         {
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("------------------------------");
             Console.WriteLine($"Enter {kindOfAmount}.");
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.White;
 
             var incomeString = Console.ReadLine() ?? String.Empty;
@@ -147,7 +149,7 @@ namespace FinanceTrackerConsole.Utilities
             {
                 Console.WriteLine($"{i + 1} - Transfer {fromOrTo} {accounts[i].Name}, {accounts[i].Balance} {accounts[i].Currency}");
             }
-            Console.WriteLine("");
+            Console.WriteLine();
 
             return Console.ReadLine() ?? String.Empty;
         }
@@ -159,7 +161,7 @@ namespace FinanceTrackerConsole.Utilities
             Console.WriteLine("------------------------------");
             Console.WriteLine($"Transfer between Account {fromAccount.Name} to {toAccount.Name}");
             Console.WriteLine($"Enter the amount (xx.xx) (max. {fromAccount.Balance} possible)");
-            Console.WriteLine("");
+            Console.WriteLine();
             return Console.ReadLine() ?? String.Empty;
         }
 
@@ -176,7 +178,7 @@ namespace FinanceTrackerConsole.Utilities
         public static bool ValidateAmount(decimal amount, Account account)
         {
             if (account is Bargeldkonto && account.Balance < amount ||
-                account is Girokonto && (account.Balance + ((account as Girokonto).OverdraftLimit) < amount)) // CodeReview: bei is expression kann eine variable genommen werden. account is GiroKonto [Variable]
+                account is Girokonto gaccount && (account.Balance + gaccount.OverdraftLimit < amount))
             {
                 ShowNotEnoughMoney();
                 return false;
@@ -196,21 +198,31 @@ namespace FinanceTrackerConsole.Utilities
             Console.WriteLine($"Last transactions:");
             foreach (Transaction transaction in accountTransactions)
             {
-                // CodeReview: Logikfehler, hier soll was anderes geschehen, als passiert. Gruß Keksi!
+                const string transfer = "Transfer";
+
+                //show special text with AccountName for "Transfer" category.
                 string otherAccountText = "";
-                if (transaction.SendingAccountId == account.Id)
+                if (transaction.Category == transfer && !(transaction.SendingAccountId is null) && !(transaction.ReceivingAccountId is null))
                 {
-                    var otherAccount = await accountManager.LoadAccount(transaction.SendingAccountId.Value); // CodeReview: null prüfung nicht vergessen
-                    otherAccountText = $"to {otherAccount.Name}";
-                }
-                else if (transaction.ReceivingAccountId == account.Id)
-                {
-                    var otherAccount = await accountManager.LoadAccount(transaction.ReceivingAccountId.Value); // CodeReview: null prüfung nicht vergessen
-                    otherAccountText = $"from {otherAccount.Name}";
+                    if (transaction.SendingAccountId != account.Id)
+                    {
+                        var otherAccount = await accountManager.LoadAccount(transaction.SendingAccountId.Value);
+                        if (otherAccount is null)
+                            otherAccountText = "from another account (could not be loaded)";
+                        else otherAccountText = $"from {otherAccount.Name}";
+                    }
+                    else if (transaction.ReceivingAccountId != account.Id)
+                    {
+                        var otherAccount = await accountManager.LoadAccount(transaction.ReceivingAccountId.Value);
+                        if (otherAccount is null)
+                            otherAccountText = "from another account (could not be loaded)";
+                        else otherAccountText = $"to {otherAccount.Name}";
+                    }
                 }
 
-                string date = transaction.Date.ToString("dddd, dd.MMMM.yyyy HH:mm:ss"); // CodeReview: Datumsformat?! Montag, 14.Oktober.2024  würde hier glaube ich rauskommen.
+                string date = transaction.Date.ToString("dddd, dd.MMMM yyyy HH:mm:ss");
                 Console.WriteLine($"{date}: {transaction.Amount}, {transaction.Category} {otherAccountText}");
+
             }
             Console.ForegroundColor = ConsoleColor.White;
         }
@@ -218,7 +230,7 @@ namespace FinanceTrackerConsole.Utilities
 
         public static void ShowAccounts(List<Account> accounts)
         {
-            Console.WriteLine("");
+            Console.WriteLine();
 
             for (int i = 0; i < accounts.Count; i++)
             {
@@ -231,10 +243,9 @@ namespace FinanceTrackerConsole.Utilities
                     accountType = "";
 
                 string overdraftLimit;
-                if (accounts[i] is Girokonto)// CodeReview: bei is expression kann eine variable genommen werden. account is GiroKonto [Variable]
+                if (accounts[i] is Girokonto gAccount)
                 {
-                    Girokonto account =  accounts[i] as Girokonto;
-                    overdraftLimit = $", Overdraft-Limit = {account.OverdraftLimit}";
+                    overdraftLimit = $", Overdraft-Limit = {gAccount.OverdraftLimit}";
                 }
                 else { overdraftLimit = ""; }
 
@@ -298,8 +309,7 @@ namespace FinanceTrackerConsole.Utilities
 
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("You failed horribly at this simple task.");
+                Utilities.YouReAFailureMessage();
             }
         }
 
@@ -319,7 +329,6 @@ namespace FinanceTrackerConsole.Utilities
                     string overDraftLimit = GetOverDraftLimit();
                     if (Int32.TryParse(overDraftLimit, out int validLimit))
                     {
-                        //accounts.Add(new Girokonto(name, balance, currency, Guid.Empty, DateTime.Now, 0.0m));
                         var gAccount = new Girokonto(name, balance, currency, Guid.Empty, validLimit);
                         var gtransaction = new Transaction(balance, "Initial", gAccount.Id);
                         await accountManager.SaveAccount(gAccount);
@@ -329,15 +338,27 @@ namespace FinanceTrackerConsole.Utilities
                     }
                     else
                     {
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.WriteLine("You failed horribly at this simple task!");
+                        Utilities.YouReAFailureMessage();
                         break;
                     }
                 default:
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("You failed horribly at this simple task!");
+                    Utilities.YouReAFailureMessage();
                     break;
             }
+        }
+
+        public static void YouReAFailureMessage()
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("You failed a that simple task");
+        }
+
+        public static void SubstractionMessage(decimal amount, Account account, string transactionCategory)
+        {
+            Console.WriteLine();
+            Console.WriteLine("------------------------------");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"{amount} {account.Currency} for {transactionCategory} substracted");
         }
     }
 }

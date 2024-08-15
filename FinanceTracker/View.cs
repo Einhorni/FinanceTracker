@@ -4,6 +4,7 @@ using String = System.String;
 using FinanceTrackerConsole.Utilities;
 using Microsoft.IdentityModel.Tokens;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 
 namespace FinanceTracker.View
 {
@@ -17,10 +18,8 @@ namespace FinanceTracker.View
             {
                 var accounts = await accountManager.LoadAccounts();
                 string entry = MainMenu(accounts);
-                //int entryAsInt; --> kann man sich durch out var entryAsInt sparen
-                bool mainMenuEntryIsInt = Int32.TryParse(entry, out var entryAsInt); // CodeReview: kann in das if selbst, variable unnötig. var keyword in betracht ziehen.
 
-                if (mainMenuEntryIsInt)
+                if (Int32.TryParse(entry, out var entryAsInt))
                 {
                     if (entryAsInt <= accounts.Count)
                     {
@@ -45,20 +44,20 @@ namespace FinanceTracker.View
 
                     else
                     {
-                        Console.WriteLine("");
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("You failed horribly. Try again!");
-                        Console.WriteLine("");
+                        Console.WriteLine();
+                        Utilities.YouReAFailureMessage();
+                        Console.WriteLine("Try again");
+                        Console.WriteLine();
                     }
 
                 }
 
                 else
                 {
-                    Console.WriteLine("");
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("You failed horribly. Try again");
-                    Console.WriteLine("");
+                    Console.WriteLine();
+                    Utilities.YouReAFailureMessage(); 
+                    Console.WriteLine("Try again");
+                    Console.WriteLine();
                 }
 
             } while (!mainExit);
@@ -74,18 +73,18 @@ namespace FinanceTracker.View
                 Console.WriteLine("Available Accounts:");
 
                 Utilities.ShowAccounts(accounts);
-                Console.WriteLine("");
+                Console.WriteLine();
                 Console.WriteLine("------------------------------");
                 Console.ForegroundColor = ConsoleColor.White;
 
-                Console.WriteLine("");
+                Console.WriteLine();
                 for (int i = 0; i <= accounts.Count - 1; i++)
                 {
                     Console.WriteLine($"{i + 1} - Show account: {accounts[i].Name}");
                 }
             }
 
-            Console.WriteLine("");
+            Console.WriteLine();
 
             if (accounts.Count > 1)
             {
@@ -94,19 +93,18 @@ namespace FinanceTracker.View
 
             if (accounts.Count <= 6)
             {
-                int newAccountEntry; // CodeReview: über eine switch-Expression nachdenken. VS hilft beim konvertieren.
-                switch (accounts.Count)
-                { 
-                    case 0: newAccountEntry = 1; break;
-                    case 1: newAccountEntry = 2; break;
-                    default: newAccountEntry = accounts.Count + 2; break;
-                }
+                int newAccountEntry = accounts.Count switch
+                {
+                    0 => 1,
+                    1 => 2,
+                    _ => accounts.Count + 2
+                };
 
                 Console.WriteLine($"{newAccountEntry} - Create a new account");
             }
             
             Console.WriteLine($"9 - Exit ");
-            Console.WriteLine("");
+            Console.WriteLine();
             return Console.ReadLine() ?? String.Empty;
         }
 
@@ -117,27 +115,29 @@ namespace FinanceTracker.View
 
             await Utilities.ShowTransactions(account, transactions, accountManager);
 
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.WriteLine("1 - Enter an expense");
             Console.WriteLine("2 - Enter an income");
             Console.WriteLine("9 - Main Menu");
             string entry = Console.ReadLine();
 
-            switch(entry)
+            const string expense = "expense";
+            const string income = "income";
+
+            switch (entry)
             {
                 case "1":
                     await TransactionMenu(account, accountManager);
-                    await AfterTransactionMenuLoop(account, accountManager);
+                    await AfterTransactionMenuLoop(account, accountManager, expense, income);
                     break;
                 case "2":
                     await IncomeMenu(account, accountManager);
-                    await AfterIncomeMenuLoop(account, accountManager);
+                    await AfterTransactionMenuLoop(account, accountManager, income, expense);
                     break;
                 case "9":
                     break;
                 default:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("You failed horribly at this simple task!");
+                    Utilities.YouReAFailureMessage();
                     break;
             }
         }
@@ -157,8 +157,8 @@ namespace FinanceTracker.View
 
                     if (!(decimal.TryParse(balanceString, out decimal balance)))
                     {
-                        Console.ForegroundColor = ConsoleColor.Red; // CodeReview: Kandidate für eine Methode, weil Codewiederholung
-                        Console.WriteLine("You failed horribly at this simple task!");
+                        Utilities.YouReAFailureMessage();
+                        
                     }
                     else
                     {
@@ -166,8 +166,7 @@ namespace FinanceTracker.View
 
                         if (!currencies.Exists(c => c == currency))
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("You failed horribly at this simple task!");
+                            Utilities.YouReAFailureMessage();
                         }
                         else
                         {
@@ -202,25 +201,23 @@ namespace FinanceTracker.View
 
                     await Utilities.SaveTransactions(incomeAmount, transactionCategory, account, accountManager);
 
-                    Console.WriteLine("");
+                    Console.WriteLine();
                     Console.WriteLine("------------------------------");
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"{incomeAmount} {account.Currency} {transactionCategory} added");
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("You failed horribly at this simple task!");
+                    Utilities.YouReAFailureMessage();
                 }
 
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine($"Current balance = {account.Balance}");
-                Console.WriteLine("");
+                Console.WriteLine();
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("You failed horribly at this simple task!");
+                Utilities.YouReAFailureMessage();
             }
         }
 
@@ -228,74 +225,42 @@ namespace FinanceTracker.View
 
         public static string AfterTransactionMenu(string enterOption1, string enterOption2)
         {
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.WriteLine("------------------------------");
             Console.WriteLine($"1 - To enter another {enterOption1}");
             Console.WriteLine($"2 - To enter an {enterOption2}");
             Console.WriteLine("9 - To return to main menu");
-            Console.WriteLine("");
+            Console.WriteLine();
             string entry = Console.ReadLine() ?? String.Empty;
             return entry;
         }
 
 
-        public async static Task AfterIncomeMenuLoop(Account account, MoneyManagementService accountManager)
+        public async static Task AfterTransactionMenuLoop(Account account, MoneyManagementService accountManager, string firstMenuOption, string secondMenuOption)
         {
             bool showMainMenu = false;
+            string caseTransactionMenu = firstMenuOption == "expense" ? "1" : "2";
+            string caseIncomeMenu = secondMenuOption == "income" ? "2" : "1";
 
             do
             {
                 var transactions = await accountManager.LoadTransactions(account.Id);
                 await Utilities.ShowTransactions(account, transactions, accountManager);
-                var entry = AfterTransactionMenu("income", "expense");
+                var entry = AfterTransactionMenu(firstMenuOption, secondMenuOption);
 
-                switch (entry)
+                if (entry == caseTransactionMenu)
                 {
-                    case "1":
-                        await IncomeMenu(account, accountManager);
-                        break;
-                    case "2":
-                        await TransactionMenu(account, accountManager);
-                        break;
-                    case "9":
-                        showMainMenu = true;
-                        break;
-                    default:
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("You failed horribly at this simple task!");
-                        break;
+                    await TransactionMenu(account, accountManager);
                 }
-            } while (!showMainMenu);
-        }
-
-        // CodeReview: beide methoden zu einer machen.
-        public async static Task AfterTransactionMenuLoop(Account account, MoneyManagementService accountManager /*string p1, string p2*/)
-        {
-            bool showMainMenu = false;
-            //string caseTransactionMenu = p1 == "expense" ? "1" : "2";
-            //var caseIncome
-            do
-            {
-                var transactions = await accountManager.LoadTransactions(account.Id);
-                await Utilities.ShowTransactions(account, transactions, accountManager);
-                var entry = AfterTransactionMenu("expense", "income");
-
-                switch (entry)
+                else if (entry == caseIncomeMenu)
                 {
-                    case "1":
-                        await TransactionMenu(account, accountManager);
-                        break;
-                    case "2":
-                        await IncomeMenu(account, accountManager);
-                        break;
-                    case "9":
-                        showMainMenu = true;
-                        break;
-                    default:
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("You failed horribly at this simple task!");
-                        break;
+                    await IncomeMenu(account, accountManager);
                 }
+                else if (entry == "9")
+                {
+                    showMainMenu = true;
+                }
+                else Utilities.YouReAFailureMessage();
             } while (!showMainMenu);
         }
 
@@ -303,46 +268,40 @@ namespace FinanceTracker.View
         {
             var categories = await accountManager.GetCategories();
             var (categoryNumberString, listedCategories) = Utilities.GetChosenCategoryNumberStringAndAmountOfCategories(categories);
+
+            if (!Int32.TryParse(categoryNumberString, out int categoryNumber))
+            {
+                Utilities.YouReAFailureMessage();
+                return;
+            }
             
-            Int32.TryParse(categoryNumberString, out int categoryNumber); // CodeReview: TryParse Ergebnis nicht berücksichtig
-
-            if (categoryNumber >=1 && categoryNumber <= (listedCategories.Count))
+            if (!(categoryNumber >= 1) || !(categoryNumber <= (listedCategories.Count)))
             {
-                string amountString = Utilities.GetTransactionAmount("expense. Without \"-\".");
-
-                if (decimal.TryParse(amountString, out decimal amount))
-                {
-                    var transactionCategory = listedCategories[categoryNumber - 1];
-
-                    var amountIsValid = Utilities.ValidateAmount(amount, account);
-
-                    if (amountIsValid)
-                    {
-                        {
-                            await Utilities.SaveTransactions(-amount, transactionCategory, account, accountManager);
-
-                            Console.WriteLine("");
-                            Console.WriteLine("------------------------------");
-                            Console.ForegroundColor = ConsoleColor.Cyan;
-                            Console.WriteLine($"{amount} {account.Currency} for {transactionCategory} substracted");
-                        }
-                    }
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("You failed horribly at this simple task!");
-                }
+                Utilities.YouReAFailureMessage();
+                return;
             }
-            else
+            
+            string amountString = Utilities.GetTransactionAmount("expense. Without \"-\".");
+
+            if (!decimal.TryParse(amountString, out decimal amount))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("You failed horribly at this simple task!");
+                Utilities.YouReAFailureMessage();
+                return;
             }
 
+            var transactionCategory = listedCategories[categoryNumber - 1];
+
+            var amountIsValid = Utilities.ValidateAmount(amount, account);
+
+            if (amountIsValid)
+            {
+                await Utilities.SaveTransactions(-amount, transactionCategory, account, accountManager);
+                Utilities.SubstractionMessage(amount, account, transactionCategory);
+            }
+            
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"Current balance = {account.Balance}");
-            Console.WriteLine("");
+            Console.WriteLine();
         }
 
 
@@ -378,8 +337,7 @@ namespace FinanceTracker.View
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("You failed horribly at this simple task.");
+                Utilities.YouReAFailureMessage();
             }
         }
     }

@@ -4,13 +4,13 @@ namespace FinanceTracker.UIMappings
 {
     internal class UIMappings
     {
-        public static string MapToCurrencyString(string currencyString) // CodeReview: input werte ggf normalisieren
+        public static string MapToCurrencyString(string currencyString)
         {
-            switch (currencyString)
+            switch (currencyString.ToUpperInvariant())
             {
-                case "e":
+                case "E":
                     return "Euro";
-                case "d":
+                case "D":
                     return "Dollar";
             }
             return "";

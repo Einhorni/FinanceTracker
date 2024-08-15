@@ -1,116 +1,23 @@
-using MoneyManagement.DataAccess;
-using MoneyManagement;
-using MoneyManagement.Models;
-using System.Xml.Linq;
+ï»¿using MoneyManagement.BusinessModels;
 using MoneyManagement.Entities;
-using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
+using MoneyManagement.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FinanceTrackerTests
 {
-    // CodeReview: Klassennamen anpassen. überlicherweise xxxTests
-    // ggf. in andere TestKlassen auslagern
-    public class UnitTest1
+    public class MappingTests
     {
-        //EF + Repo Kram muss man nicht testen
-        //Testen: Mapping, BusinessZeug
-
-        #region Business Model Tests
-
-        [Fact]
-        public void ChangeAmount_ChangesAmount()
-        {
-            //Arrange
-            Account acc = new Girokonto("name", 70.99m, "Euro", Guid.NewGuid());
-            //Act
-            acc.ChangeAmount(10.0m);
-            //Assert
-            Assert.Equal(80.99m, acc.Balance);
-        }
-
-
-        [Fact]
-        public void TransactionValid_TransactionIfBalanceAndOverdraftMoreThanTransactionAmount()
-        {
-            Account acc = new Girokonto("name", 70.0m, "Euro", Guid.NewGuid(), 10.0m);
-            Transaction testTransaction = new Transaction(-79.0m, "TestCat", Guid.NewGuid());
-
-            var validation = acc.TransactionValid(testTransaction);
-
-            Assert.True(validation);
-        }
-
-
-        [Fact]
-        public void TransactionValid_TransactionIfBalanceAndOverdraftEqualThanTransactionAmount()
-        {
-            Account acc = new Girokonto("name", 70.0m, "Euro", Guid.NewGuid(), 10.0m);
-            Transaction testTransaction = new Transaction(-80.0m, "TestCat", Guid.NewGuid());
-
-            var validation = acc.TransactionValid(testTransaction);
-
-            Assert.True(validation);
-        }
-
-
-        [Fact]
-        public void TransactionValid_NoTransactionIfBalanceAndOverdraftLessThanTransactionAmount()
-        {
-            Account acc = new Girokonto("name", 70.0m, "Euro", Guid.NewGuid(), 10.0m);
-            Transaction testTransaction = new Transaction(-81.0m, "TestCat", Guid.NewGuid());
-
-            var validation = acc.TransactionValid(testTransaction);
-
-            Assert.False(validation);
-        }
-
-
-        [Fact]
-        public void TransactionValid_NoTransactionIfBalanceLessThanTransactionAmount()
-        {
-            Account acc = new Bargeldkonto("name", 70.0m, "Euro", Guid.NewGuid());
-            Transaction testTransaction = new Transaction(-71.0m, "TestCat", Guid.NewGuid());
-
-            var validation = acc.TransactionValid(testTransaction);
-
-            Assert.False(validation);
-        }
-
-
-        [Fact]
-        public void TransactionValid_TransactionIfBalanceEqualThanTransactionAmount()
-        {
-            Account acc = new Bargeldkonto("name", 70.0m, "Euro", Guid.NewGuid());
-            Transaction testTransaction = new Transaction(-70.0m, "TestCat", Guid.NewGuid());
-
-            var validation = acc.TransactionValid(testTransaction);
-
-            Assert.True(validation);
-        }
-
-
-        [Fact]
-        public void TransactionValid_TransactionIfBalanceMoreThanTransactionAmount()
-        {
-            Account acc = new Bargeldkonto("name", 70.0m, "Euro", Guid.NewGuid());
-            Transaction testTransaction = new Transaction(-69.0m, "TestCat", Guid.NewGuid());
-
-            var validation = acc.TransactionValid(testTransaction);
-
-            Assert.True(validation);
-        }
-
-        #endregion
-
         Guid kontoGuid = Guid.NewGuid();
         Guid transactionGuid = Guid.NewGuid();
         Guid fromKontoGuid = Guid.NewGuid();
         Guid toKontoGuid = Guid.NewGuid();
         DateTime dateTimeKonto = DateTime.Now;
         DateTime dateTimeTransaction = DateTime.Now;
-        
+
 
         public Girokonto NewGirokonto()
         {
@@ -191,7 +98,7 @@ namespace FinanceTrackerTests
 
         #region Mappings Entity to Giro / Barkonto
 
-        
+
         [Fact]
         public void AccountEntityToAccount_MapsToGiroAccount()
         {
@@ -310,23 +217,5 @@ namespace FinanceTrackerTests
         }
 
         #endregion
-
-
-
-
-        ////ein Testcode mit unterschiedlichen Daten
-        //[Theory]
-        ////objekte kann ich nicht eingeben, nur primitive Typen
-        //[InlineData(1, 3, 4)]
-        //[InlineData(4, 2, 6)]
-        //[InlineData(1, 8, 9)]
-        //[InlineData(10, 10, 20)]
-        //public void Test(int x, int y, int exVal)
-
-        //{
-        //    { Assert.Equal(x, y); }
-        //    var zahl = x - y;
-        //    Assert.Equal(zahl, exVal);
-        //}
     }
 }

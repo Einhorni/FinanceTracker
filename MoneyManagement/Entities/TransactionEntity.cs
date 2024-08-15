@@ -28,7 +28,7 @@ namespace MoneyManagement.Entities
         public Guid AccountId { get; set; }
 
         [ForeignKey(nameof(AccountId))]
-        public AccountEntity Account { get; set; } // CodeReview = default!, damit er wegen dem Null nicht rumjammert
+        public AccountEntity Account { get; set; } = default!;
 
         public Guid? FromAccountId { get; set; } 
         public Guid? ToAccountId { get; set; }

@@ -6,24 +6,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MoneyManagement.DataAccess
+namespace MoneyManagement.BusinessModels
 {
-   
+
     public static class Mappings
     {
-        // CodeReview: wiedere löschen
-        public const string magic = "magic";
+        public const string bAccount = "Bargeldkonto";
+        public const string gAccount = "Girokonto";
 
         //Extension Method auf AccountEntity mit this
-        // CodeReview: Magic-Strings durch constanten ersetzen.
-        // nicht glütigen Fall mit Exception quittieren. Beispiel: NotImplementException
+        // CodeReview: nicht glütigen Fall mit Exception quittieren. Beispiel: NotImplementException
         public static Account AccountEntityToAccount(this AccountEntity account)
         {
             var balance = account.Transactions
                         .Select(t => t.Amount).Sum();
 
-            //ist entweder Bargeldkto oder Girokonto, in Zukunft noch andere
-            if (account.KindOfAccount == "Bargeldkonto")
+            if (account.KindOfAccount == bAccount)
             {
                 return
                     new Bargeldkonto
@@ -36,7 +34,7 @@ namespace MoneyManagement.DataAccess
                     };
             }
 
-            if (account.KindOfAccount == "Girokonto")
+            if (account.KindOfAccount == gAccount)
             {
                 return
                     new Girokonto
@@ -50,56 +48,47 @@ namespace MoneyManagement.DataAccess
                     };
             }
 
-            //sollte nicht eintreten
-            //else return null;
             {
-                return
-                    new Bargeldkonto
-                    {
-                        Name = "",
-                        Balance = 0.0m,
-                        Id = Guid.Empty,
-                        DateOfCreation = DateTime.MinValue,
-                        Currency = account.Currency
-                    };
+                throw new NotImplementedException();
             };
         }
 
-        // CodeReview: bei input null exception
 
         public static AccountEntity AccountToAccountEntity(this Account accountDto)
         {
-            if (accountDto == null) return null;
-
-            if (accountDto is Bargeldkonto bar) // CodeReview: (is [Type] [Variable])  statt späteren var [Variable] = x as [Type]
+            if (accountDto == null)
             {
-                //var bar = accountDto as Bargeldkonto;
+                throw new ArgumentNullException(nameof(accountDto));
+            }
+
+            if (accountDto is Bargeldkonto bar)
+            {
                 return new AccountEntity
                 {
                     Name = bar.Name,
                     Currency = bar.Currency.ToString(),
-                    KindOfAccount = nameof(Bargeldkonto), // CodeReview: statt nameof, magic constants verwenden
+                    KindOfAccount = bAccount,
                     DateOfCreation = bar.DateOfCreation,
                     Id = bar.Id
                 };
             };
 
-            if (accountDto is Girokonto) // CodeReview: (is [Type] [Variable])  statt späteren var [Variable] = x as [Type]
+            if (accountDto is Girokonto giro)
             {
-                var giro = accountDto as Girokonto;
                 return new AccountEntity
                 {
                     Name = giro.Name,
                     Currency = giro.Currency.ToString(),
-                    KindOfAccount = nameof(Girokonto), // CodeReview: statt nameof, magic constants verwenden
+                    KindOfAccount = gAccount,
                     DateOfCreation = giro.DateOfCreation,
                     Id = giro.Id,
                     Overdraft = giro.OverdraftLimit,
                 };
             }
 
-            else return null; // CodeReview: mit Exception quittieren
-            
+            {
+                throw new NotImplementedException();
+            };
         }
 
 
@@ -118,16 +107,17 @@ namespace MoneyManagement.DataAccess
             };
         }
 
-        // CodeReview: object initializer (siehe methode oben drüber) verwenden. (Diese geschweiften Klammern)
+
         public static Transaction TransactionEntityToTransaction(this TransactionEntity transactionEntity)
         {
-            var transaction = new Transaction(transactionEntity.Amount, transactionEntity.CategoryName, transactionEntity.AccountId);
-            transaction.TransactionId = transactionEntity.Id;
-            transaction.SendingAccountId = transactionEntity.FromAccountId;
-            transaction.ReceivingAccountId = transactionEntity.ToAccountId;
-            transaction.Date = transactionEntity.Date;
-            transaction.Title = transactionEntity.Title;
-            return transaction;
+            return new Transaction(transactionEntity.Amount, transactionEntity.CategoryName, transactionEntity.AccountId)
+            {
+                TransactionId = transactionEntity.Id,
+                SendingAccountId = transactionEntity.FromAccountId,
+                ReceivingAccountId = transactionEntity.ToAccountId,
+                Date = transactionEntity.Date,
+                Title = transactionEntity.Title
+            };
         }
     }
 }

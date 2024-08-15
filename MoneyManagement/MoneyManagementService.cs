@@ -27,14 +27,19 @@ namespace MoneyManagement
             return _accountRepository.LoadAccounts();
         }
 
-        // CodeReview: null für nicht vorhanden Datensatz in Erwägung ziehen
-        public Task<Account> LoadAccount(Guid id)
+        public async Task<Account> LoadAccount(Guid id)
         {
-            return _accountRepository.LoadAccount(id);
+            var account = await _accountRepository.LoadAccount(id);
+            //keine ex, sondern account oder null zurückgeben --> erwarteter Fehler
+            //oder resulttype mit string als fehlerobjekt
+            if (account is null)
+                throw new ArgumentNullException("No account found");
+            return account;
         }
 
         public Task SaveAccount(Account account)
         {
+            //keine Nullprüfung, weil nur Wrapper, aber möglich, wenn ich das Repo nicht kenne
             return _accountRepository.SaveAccount(account);
         }
 
@@ -46,24 +51,26 @@ namespace MoneyManagement
 
         // CodeReview: ggf. ResultType anlegen, 2 properties. Success: bool, ErrorMessage: string
         // Nuget: CSharpFunctionalExtensions  (Result-Type)
-        public async Task<string> SaveTransactions(List<Transaction> transactions)
+        // zurückgeben und fehlermeldung darauf basierend ausgeben - es ist eine businessprüfung
+        // andere prüfungen können direkt im client gemacht werden (tranasktion kleiner 0 oder sowas)
+        public async Task SaveTransactions(List<Transaction> transactions)
         {
+            //null prüfung
             foreach (Transaction transaction in transactions) 
             {
                 var account = await LoadAccount(transaction.AccountId);
-                //var notValid = account.TransactionNotValid(transaction);
                 var valid = account.TransactionValid(transaction);
 
+                //keine erwarteten Fehler mit exceptions -> in UI
                 if (!valid)
                 {
-                    return "Transfer not possible"; // CodeReview: Genauere Fehlermeld für user zurückgeben. Konto überzogen
+                    throw new InvalidOperationException("Not enough money on account");
                 }
             }
-            return await _transactionRepository.SaveTransactions(transactions);
+            await _transactionRepository.SaveTransactions(transactions);
         }
 
 
-        //hier ist async & await wichtig, da ich eine Operation mit categories anfange
         public Task<List<Category>> GetCategories()
         {
             return _categoryRepository.GetCategories();
@@ -73,6 +80,8 @@ namespace MoneyManagement
 
         //Factory-Methode: das wir nur für die Konsolenanwendung gebraucht, damit ich nicht ständig das Objekt kompliziert erzeugen muss, sondern nur MoneyManagementService.Create()
         //bei Websanwendungen kann ich dann dieses MoneyManagementDing per DI Container injizieren in der Program.cs
+        //Encapsulating object creation == decoupling, open closed principle
+        //central point of control -> testing and mocking
         public static MoneyManagementService Create()
         {
             var financecontext = new FinanceContext();

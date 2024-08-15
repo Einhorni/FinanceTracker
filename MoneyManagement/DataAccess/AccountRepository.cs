@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using MoneyManagement.BusinessModels;
 using MoneyManagement.DbContexts;
 using MoneyManagement.Entities;
 using MoneyManagement.Models;
@@ -50,17 +51,28 @@ namespace MoneyManagement.DataAccess
             var accountEntity = await _financeContext.Accounts
                 .Include(a => a.Transactions)
                 .Where(a => a.Id == id)
-                .FirstAsync();
+                .FirstOrDefaultAsync();
 
-            var account = accountEntity.AccountEntityToAccount(); 
+            //bei allen Ladeoperationen: account oder null zurückgeben (auch im service), wenn etwas nicht geladen werden kann -> Nachricht in UI, zusätzlich try catch
+            if (accountEntity == null)
+            { 
+                throw new ArgumentNullException(nameof(accountEntity));
+            }
+
+            var account = accountEntity?.AccountEntityToAccount(); 
 
             return account;
         }
 
-        // CodeReview: prüfen ob input null ist und wenn ja ArgumentNullException werfen
+        // CodeReview: prüfen ob input null ist und wenn ja ArgumentNullException werfen, try catch in UI
         // Update inmplementieren
         public async Task SaveAccount(Account account)
         {
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+
             var accountEntity = account.AccountToAccountEntity();
 
             await _financeContext.Accounts.AddAsync(accountEntity);

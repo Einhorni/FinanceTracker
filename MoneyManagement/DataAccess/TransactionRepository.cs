@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using MoneyManagement.BusinessModels;
 using MoneyManagement.DbContexts;
 using MoneyManagement.Entities;
 using Transaction = MoneyManagement.Models.Transaction;
@@ -14,18 +16,12 @@ namespace MoneyManagement.DataAccess
             _financeContext = financeContext ?? throw new ArgumentNullException(nameof(financeContext));
         }
 
-        // CodeReview: Unnötigen Filter entfernen (Catergories)
-        // Wenn Filter gebraucht wird, dann in eine separate Repository Function packen. ggf. mit filter - parameter
+
         public async Task<List<Transaction>> LoadTransactions(Guid accountId)
         {
-            var categories = await _financeContext.Categories./*Where(c => c.Expense).*/ToListAsync();
-
             var transactionEntities = await
                 _financeContext.Transactions
                 .Where(t => t.AccountId == accountId)
-                .Where(t => categories
-                    .Select(c=> c.Name)
-                    .Contains(t.CategoryName))
                 .OrderByDescending(t => t.Date)
                 .ToListAsync();
 
@@ -37,23 +33,20 @@ namespace MoneyManagement.DataAccess
             return transactions;
         }
 
-        // CodeReview: return nur Task, Und Statusmeldungen den überliegenden Schichten überlassen
-        // leere input liste prüfen und ggf. vorzeitiges return.
-        public async Task<string> SaveTransactions(List<Transaction> transactions)
+        // CodeReview: return nur Task, Und Statusmeldungen den überliegenden Schichten überlassen - nicht im Service -> in UI oder später in der WebAPI mit StatusCodes
+        //Wenn ich in einer tieferliegenden Schicht (Backend) eine Ex werfe, dann an der entsprechenden Stelle In UI bei Aufruf der Funktion try catch
+        public async Task SaveTransactions(List<Transaction> transactions)
         {
+            if (transactions.IsNullOrEmpty()) return; //teilen in null dann throw NullArgument return und empty 
+
             var transactionEntities = new List<TransactionEntity>();
 
-            //könnte ich Linqen
-            foreach (var transaction in transactions)
-            {
-                var transactionEntity = transaction.TransactionToTransactionEntity();
-                transactionEntities.Add(transactionEntity);
-            }
+            transactionEntities
+                .AddRange(transactions
+                    .Select(t => t.TransactionToTransactionEntity()));
 
             await _financeContext.Transactions.AddRangeAsync(transactionEntities);
             await _financeContext.SaveChangesAsync();
-
-            return "Transfer saved";
         }
     }
 

@@ -18,7 +18,7 @@ namespace MoneyManagement.Models
         {
             TransactionId = Guid.NewGuid();
             Amount = amount;
-            Date = DateTime.Now;
+            Date = DateTime.UtcNow;
             Category = category;
             AccountId = accountId;
         }
@@ -27,7 +27,7 @@ namespace MoneyManagement.Models
         {
             TransactionId = Guid.NewGuid();
             Amount = amount;
-            Date = DateTime.Now;
+            Date = DateTime.UtcNow;
             Category = category;
             SendingAccountId = fromAccountId;
             ReceivingAccountId = toAccountId;
