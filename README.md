@@ -26,3 +26,4 @@ Although they are great, I want to write a budgeting app (not a banking app) tha
 * Used extension methods for mapping
 * Global Error Handling and Logger (last is overkill but I wanted to try it in a console application rather than a ASP.NET Core app)
 * Unit Tests
+* Code Reviewed
