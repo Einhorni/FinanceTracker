@@ -3,6 +3,10 @@ using MoneyManagement.Models;
 using MoneyManagement.DataAccess;
 using MoneyManagement.Entities;
 using MoneyManagement.DbContexts;
+using CSharpFunctionalExtensions;
+using Microsoft.Identity.Client;
+using System.Threading.Tasks;
+using Serilog;
 
 namespace MoneyManagement
 {
@@ -12,12 +16,14 @@ namespace MoneyManagement
         private readonly IAccountRepository _accountRepository;
         private readonly ITransactionRepository _transactionRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ILogger _logger;
 
-        public MoneyManagementService(IAccountRepository accountRepository, ITransactionRepository transactionRepository, ICategoryRepository categoryRepository)
+        public MoneyManagementService(IAccountRepository accountRepository, ITransactionRepository transactionRepository, ICategoryRepository categoryRepository, ILogger logger)
         {
             _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
             _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
+            _logger = logger;
         }
 
 
@@ -27,13 +33,9 @@ namespace MoneyManagement
             return _accountRepository.LoadAccounts();
         }
 
-        public async Task<Account> LoadAccount(Guid id)
+        public Task<Maybe<Account>> LoadAccount(Guid id)
         {
-            var account = await _accountRepository.LoadAccount(id);
-            //keine ex, sondern account oder null zurückgeben --> erwarteter Fehler
-            //oder resulttype mit string als fehlerobjekt
-            if (account is null)
-                throw new ArgumentNullException("No account found");
+            var account = _accountRepository.LoadAccount(id);
             return account;
         }
 
@@ -44,30 +46,30 @@ namespace MoneyManagement
         }
 
 
-        public Task<List<Transaction>> LoadTransactions(Guid accountId)
+        public Task<List<Transaction>>LoadTransactions(Guid accountId)
         {
             return _transactionRepository.LoadTransactions(accountId);
         }
-
-        // CodeReview: ggf. ResultType anlegen, 2 properties. Success: bool, ErrorMessage: string
+        
         // Nuget: CSharpFunctionalExtensions  (Result-Type)
-        // zurückgeben und fehlermeldung darauf basierend ausgeben - es ist eine businessprüfung
-        // andere prüfungen können direkt im client gemacht werden (tranasktion kleiner 0 oder sowas)
-        public async Task SaveTransactions(List<Transaction> transactions)
+        // Businessprüfung: Fehlermeldung in UI (Validation)
+        public async Task<Result> SaveTransactions(List<Transaction> transactions)
         {
-            //null prüfung
-            foreach (Transaction transaction in transactions) 
+            foreach (Transaction transaction in transactions)
             {
                 var account = await LoadAccount(transaction.AccountId);
-                var valid = account.TransactionValid(transaction);
+                
+                if (!account.HasValue)
+                    throw new AccountNotFoundException (nameof(account));
+                
+                var valid = account.Value.TransactionValid(transaction);
 
-                //keine erwarteten Fehler mit exceptions -> in UI
                 if (!valid)
-                {
-                    throw new InvalidOperationException("Not enough money on account");
-                }
+                    return Result.Failure("Not enough money available.");
             }
+            
             await _transactionRepository.SaveTransactions(transactions);
+            return Result.Success();
         }
 
 
@@ -82,10 +84,15 @@ namespace MoneyManagement
         //bei Websanwendungen kann ich dann dieses MoneyManagementDing per DI Container injizieren in der Program.cs
         //Encapsulating object creation == decoupling, open closed principle
         //central point of control -> testing and mocking
-        public static MoneyManagementService Create()
+        public static MoneyManagementService Create(ILogger serilog)
         {
             var financecontext = new FinanceContext();
-            return new(new AccountRepository(financecontext), new TransactionRepository(financecontext), new CategoryRepository(financecontext));
+            return new(new AccountRepository(financecontext), new TransactionRepository(financecontext), new CategoryRepository(financecontext), serilog);
         }
+    }
+
+    public class AccountNotFoundException : Exception
+    {
+        public AccountNotFoundException(string message) : base(message) { }
     }
 }

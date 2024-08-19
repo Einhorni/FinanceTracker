@@ -1,6 +1,10 @@
 ﻿using FinanceTracker.UIMappings;
 using MoneyManagement.Models;
 using MoneyManagement;
+using Microsoft.Identity.Client;
+using CSharpFunctionalExtensions;
+using Serilog;
+using System.Linq.Expressions;
 
 namespace FinanceTrackerConsole.Utilities
 {
@@ -196,8 +200,15 @@ namespace FinanceTrackerConsole.Utilities
             Console.WriteLine("------------------------------");
             Console.WriteLine($"This is Account {account.Name}. It's Balance is {account.Balance} {account.Currency}.");
             Console.WriteLine($"Last transactions:");
-            foreach (Transaction transaction in accountTransactions)
+            foreach (Transaction? transaction in accountTransactions)
             {
+                if (transaction is null)
+                {
+                    Console.WriteLine("Transaction could not be loaded");
+                    break;
+                }
+
+
                 const string transfer = "Transfer";
 
                 //show special text with AccountName for "Transfer" category.
@@ -207,16 +218,16 @@ namespace FinanceTrackerConsole.Utilities
                     if (transaction.SendingAccountId != account.Id)
                     {
                         var otherAccount = await accountManager.LoadAccount(transaction.SendingAccountId.Value);
-                        if (otherAccount is null)
+                        if (otherAccount.HasNoValue)
                             otherAccountText = "from another account (could not be loaded)";
-                        else otherAccountText = $"from {otherAccount.Name}";
+                        else otherAccountText = $"from {otherAccount.Value.Name}";
                     }
                     else if (transaction.ReceivingAccountId != account.Id)
                     {
                         var otherAccount = await accountManager.LoadAccount(transaction.ReceivingAccountId.Value);
-                        if (otherAccount is null)
-                            otherAccountText = "from another account (could not be loaded)";
-                        else otherAccountText = $"to {otherAccount.Name}";
+                        if (otherAccount.HasNoValue)
+                            otherAccountText = "to another account (could not be loaded)";
+                        else otherAccountText = $"to {otherAccount.Value.Name}";
                     }
                 }
 
@@ -255,15 +266,15 @@ namespace FinanceTrackerConsole.Utilities
         }
 
 
-        public async static Task<string> SaveTransactions(decimal amount, string transactionCategory, Account account, MoneyManagementService accountManager)
+        public async static Task<Result> SaveSingleTransaction(decimal amount, string transactionCategory, Account account, MoneyManagementService accountManager)
         {
-            Transaction newTransaction = new(amount, transactionCategory, account.Id);
-            account.ChangeAmount(amount);
-            return await accountManager.SaveTransactions([newTransaction]);
+                Transaction newTransaction = new(amount, transactionCategory, account.Id);
+                account.ChangeAmount(amount);
+                return await accountManager.SaveTransactions([newTransaction]);
         }
 
 
-        public async static Task SaveAccounts(string amountString, Account fromAccount, Account toAccount, MoneyManagementService accountManager)
+        public async static Task SaveTransferTransactions(string amountString, Account fromAccount, Account toAccount, MoneyManagementService accountManager)
         {
             if (decimal.TryParse(amountString, out decimal amount))
             {
@@ -291,8 +302,10 @@ namespace FinanceTrackerConsole.Utilities
                             toAccount.Id
                         );
 
-                    var messageFromRepo = await accountManager.SaveTransactions([transactionFrom, transactionTo]);
-                    Console.WriteLine($"{messageFromRepo}");
+                    var saveResult = await accountManager.SaveTransactions([transactionFrom, transactionTo]);
+                    
+                    if (saveResult.IsFailure)
+                        Console.WriteLine($"{saveResult}");
 
                     fromAccount.ChangeAmount(-amount);
                     toAccount.ChangeAmount(amount);
@@ -316,34 +329,45 @@ namespace FinanceTrackerConsole.Utilities
 
         public async static Task SaveAccount(string accountTypeString, string name, decimal balance, string currency, MoneyManagementService accountManager)
         {
-            switch (accountTypeString)
+            try
             {
-                case "1":
-                    var bAccount = new Bargeldkonto(name, balance, currency, Guid.Empty);
-                    var btransaction = new Transaction(balance, "Initial", bAccount.Id);
-                    await accountManager.SaveAccount(bAccount);
-                    var messageFromRepo = await accountManager.SaveTransactions([btransaction]);
-                    Console.WriteLine($"{messageFromRepo}");
-                    break;
-                case "2":
-                    string overDraftLimit = GetOverDraftLimit();
-                    if (Int32.TryParse(overDraftLimit, out int validLimit))
-                    {
-                        var gAccount = new Girokonto(name, balance, currency, Guid.Empty, validLimit);
-                        var gtransaction = new Transaction(balance, "Initial", gAccount.Id);
-                        await accountManager.SaveAccount(gAccount);
-                        messageFromRepo = await accountManager.SaveTransactions([gtransaction]);
-                        Console.WriteLine($"{messageFromRepo}");
+                switch (accountTypeString)
+                {
+                    case "1":
+                        var bAccount = new Bargeldkonto(name, balance, currency, Guid.Empty);
+                        var btransaction = new Transaction(balance, "Initial", bAccount.Id);
+                        await accountManager.SaveAccount(bAccount);
+                        var saveResult = await accountManager.SaveTransactions([btransaction]);
+
+                        if (saveResult.IsFailure)
+                            Console.WriteLine($"{saveResult}");
                         break;
-                    }
-                    else
-                    {
+                    case "2":
+                        string overDraftLimit = GetOverDraftLimit();
+                        if (Int32.TryParse(overDraftLimit, out int validLimit))
+                        {
+                            var gAccount = new Girokonto(name, balance, currency, Guid.Empty, validLimit);
+                            var gtransaction = new Transaction(balance, "Initial", gAccount.Id);
+                            await accountManager.SaveAccount(gAccount);
+                            saveResult = await accountManager.SaveTransactions([gtransaction]);
+
+                            if (saveResult.IsFailure)
+                                Console.WriteLine($"{saveResult}");
+                            break;
+                        }
+                        else
+                        {
+                            Utilities.YouReAFailureMessage();
+                            break;
+                        }
+                    default:
                         Utilities.YouReAFailureMessage();
                         break;
-                    }
-                default:
-                    Utilities.YouReAFailureMessage();
-                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Save Transaction failed");
             }
         }
 

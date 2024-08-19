@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MoneyManagement.BusinessModels;
 using MoneyManagement.DbContexts;
@@ -21,6 +22,7 @@ namespace MoneyManagement.DataAccess
         {
             var transactionEntities = await
                 _financeContext.Transactions
+                .AsNoTracking()
                 .Where(t => t.AccountId == accountId)
                 .OrderByDescending(t => t.Date)
                 .ToListAsync();
@@ -33,17 +35,17 @@ namespace MoneyManagement.DataAccess
             return transactions;
         }
 
-        // CodeReview: return nur Task, Und Statusmeldungen den überliegenden Schichten überlassen - nicht im Service -> in UI oder später in der WebAPI mit StatusCodes
-        //Wenn ich in einer tieferliegenden Schicht (Backend) eine Ex werfe, dann an der entsprechenden Stelle In UI bei Aufruf der Funktion try catch
+
         public async Task SaveTransactions(List<Transaction> transactions)
         {
-            if (transactions.IsNullOrEmpty()) return; //teilen in null dann throw NullArgument return und empty 
+            ArgumentNullException.ThrowIfNull(transactions);
+            // =
+            //if (transactions is null) throw new ArgumentNullException(nameof(transactions));
 
-            var transactionEntities = new List<TransactionEntity>();
-
-            transactionEntities
-                .AddRange(transactions
-                    .Select(t => t.TransactionToTransactionEntity()));
+            var transactionEntities =
+                transactions
+                    .Select(t => t.TransactionToTransactionEntity())
+                    .ToList();
 
             await _financeContext.Transactions.AddRangeAsync(transactionEntities);
             await _financeContext.SaveChangesAsync();

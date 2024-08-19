@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using MoneyManagement.BusinessModels;
 using MoneyManagement.DbContexts;
@@ -29,8 +30,9 @@ namespace MoneyManagement.DataAccess
 
         public async Task<List<Account>> LoadAccounts()
         {
-            //mit dem Include wird die Liste der Transaktionen mit in das Objekt geladen
+            //wenn ich das entitiyobjekt nicht rausgebe, sondern k. a. ein Domänenobjekt
             var accountEntities = await _financeContext.Accounts
+                .AsNoTracking()
                 .Include(a => a.Transactions)
                 .OrderBy(a => a.Name)
                 .ToListAsync();
@@ -44,28 +46,21 @@ namespace MoneyManagement.DataAccess
             return accounts;
         }
 
-        // CodeReview: Function schlägt fehl, wenn id unbekannt.
-        // bei nicht vorhanden sein, null zurückgeben und in der Schicht oben drüber adequat als User-Fehler behandeln. "Datensatz nicht vorhanden", oder ähnlich
-        public async Task<Account> LoadAccount(Guid id)
+
+        public async Task<Maybe<Account>> LoadAccount(Guid id) 
         {
             var accountEntity = await _financeContext.Accounts
+                .AsNoTracking()
                 .Include(a => a.Transactions)
                 .Where(a => a.Id == id)
                 .FirstOrDefaultAsync();
 
-            //bei allen Ladeoperationen: account oder null zurückgeben (auch im service), wenn etwas nicht geladen werden kann -> Nachricht in UI, zusätzlich try catch
-            if (accountEntity == null)
-            { 
-                throw new ArgumentNullException(nameof(accountEntity));
-            }
-
             var account = accountEntity?.AccountEntityToAccount(); 
 
-            return account;
+            return account.AsMaybe();
         }
 
-        // CodeReview: prüfen ob input null ist und wenn ja ArgumentNullException werfen, try catch in UI
-        // Update inmplementieren
+
         public async Task SaveAccount(Account account)
         {
             if (account == null)

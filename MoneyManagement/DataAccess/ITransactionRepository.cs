@@ -1,5 +1,6 @@
 ﻿using MoneyManagement.Models;
 using MoneyManagement.Entities;
+using CSharpFunctionalExtensions;
 
 namespace MoneyManagement.DataAccess
 {

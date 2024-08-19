@@ -12,7 +12,7 @@ Log.Logger = new LoggerConfiguration()
 
 try 
 {
-    MoneyManagementService accountManager = MoneyManagementService.Create();
+    MoneyManagementService accountManager = MoneyManagementService.Create(Log.Logger);
 
     await View.MainLoop(accountManager);
 }

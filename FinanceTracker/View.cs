@@ -5,6 +5,8 @@ using FinanceTrackerConsole.Utilities;
 using Microsoft.IdentityModel.Tokens;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
+using Serilog;
+using CSharpFunctionalExtensions;
 
 namespace FinanceTracker.View
 {
@@ -16,48 +18,58 @@ namespace FinanceTracker.View
 
             do
             {
-                var accounts = await accountManager.LoadAccounts();
-                string entry = MainMenu(accounts);
-
-                if (Int32.TryParse(entry, out var entryAsInt))
+                try
                 {
-                    if (entryAsInt <= accounts.Count)
+                    var accounts = await accountManager.LoadAccounts();
+
+                    string entry = MainMenu(accounts);
+                
+                    if (Int32.TryParse(entry, out var entryAsInt))
                     {
-                        await AccountMenu(accounts[entryAsInt - 1], accounts, accountManager);
+                        if (entryAsInt <= accounts.Count)
+                        {
+                            await AccountMenu(accounts[entryAsInt - 1], accounts, accountManager);
+                        }
+
+                        //Show Transfer between two accounts Menu only if there are at least 2 accounts
+                        else if (entryAsInt == accounts.Count + 1 && accounts.Count > 1)
+                        {
+                            await TransferMenu(accounts, accountManager);
+                        }
+
+                        //Choosable number differs depending on the amount of accounts
+                        else if (entryAsInt == accounts.Count + 1 && accounts.Count == 1)
+                            await CreateAccountMenu(["Dollar", "Euro"], accountManager);
+
+                        else if (entryAsInt == accounts.Count + 2 && accounts.Count > 1)
+                            await CreateAccountMenu(["Dollar", "Euro"], accountManager);
+
+                        else if (entryAsInt == (9))
+                            mainExit = true;
+
+                        else
+                        {
+                            Console.WriteLine();
+                            Utilities.YouReAFailureMessage();
+                            Console.WriteLine("Try again");
+                            Console.WriteLine();
+                        }
+
                     }
-
-                    //Show Transfer between two accounts Menu only if there are at least 2 accounts
-                    else if (entryAsInt == accounts.Count + 1 && accounts.Count > 1)
-                    {
-                        await TransferMenu(accounts, accountManager);
-                    }
-
-                    //Choosable number differs depending on the amount of accounts
-                    else if (entryAsInt == accounts.Count + 1 && accounts.Count == 1)
-                        await CreateAccountMenu(["Dollar", "Euro"], accountManager);
-
-                    else if (entryAsInt == accounts.Count + 2 && accounts.Count > 1)
-                        await CreateAccountMenu(["Dollar", "Euro"], accountManager);
-
-                    else if (entryAsInt == (9))
-                        mainExit = true;
 
                     else
                     {
                         Console.WriteLine();
-                        Utilities.YouReAFailureMessage();
+                        Utilities.YouReAFailureMessage(); 
                         Console.WriteLine("Try again");
                         Console.WriteLine();
                     }
 
                 }
-
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine();
-                    Utilities.YouReAFailureMessage(); 
-                    Console.WriteLine("Try again");
-                    Console.WriteLine();
+                    Log.Error(ex, "Accounts couldn't be loaded. Try again later.");
+                    mainExit = true;
                 }
 
             } while (!mainExit);
@@ -111,9 +123,17 @@ namespace FinanceTracker.View
 
         public async static Task AccountMenu(Account account, List<Account> accounts, MoneyManagementService accountManager)
         {
-            var transactions = await accountManager.LoadTransactions(account.Id);
+            try
+            {
+                var transactions = await accountManager.LoadTransactions(account.Id);
 
-            await Utilities.ShowTransactions(account, transactions, accountManager);
+                await Utilities.ShowTransactions(account, transactions, accountManager);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Unable to load Transactions from database");
+                Log.Error(ex, "Unable to load Transactions from database");
+            }
 
             Console.WriteLine();
             Console.WriteLine("1 - Enter an expense");
@@ -124,21 +144,28 @@ namespace FinanceTracker.View
             const string expense = "expense";
             const string income = "income";
 
-            switch (entry)
+            try
             {
-                case "1":
-                    await TransactionMenu(account, accountManager);
-                    await AfterTransactionMenuLoop(account, accountManager, expense, income);
-                    break;
-                case "2":
-                    await IncomeMenu(account, accountManager);
-                    await AfterTransactionMenuLoop(account, accountManager, income, expense);
-                    break;
-                case "9":
-                    break;
-                default:
-                    Utilities.YouReAFailureMessage();
-                    break;
+                switch (entry)
+                {
+                    case "1":
+                        await TransactionMenu(account, accountManager);
+                        await AfterTransactionMenuLoop(account, accountManager, expense, income);
+                        break;
+                    case "2":
+                        await IncomeMenu(account, accountManager);
+                        await AfterTransactionMenuLoop(account, accountManager, income, expense);
+                        break;
+                    case "9":
+                        break;
+                    default:
+                        Utilities.YouReAFailureMessage();
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error ocurred while saving a transaction");
             }
         }
 
@@ -158,22 +185,27 @@ namespace FinanceTracker.View
                     if (!(decimal.TryParse(balanceString, out decimal balance)))
                     {
                         Utilities.YouReAFailureMessage();
-                        
+                        return;
                     }
-                    else
-                    {
-                        var currency = Utilities.GetAccoutCurreny() ?? String.Empty;
+                    
+                    var currency = Utilities.GetAccoutCurreny() ?? String.Empty;
 
-                        if (!currencies.Exists(c => c == currency))
-                        {
-                            Utilities.YouReAFailureMessage();
-                        }
-                        else
-                        {
-                            string accountTypeString = Utilities.GetNewAccountType();
-                            await Utilities.SaveAccount(accountTypeString, name, balance, currency, accountManager);
-                        }
-                    };
+                    if (!currencies.Exists(c => c == currency))
+                    {
+                        Utilities.YouReAFailureMessage();
+                        return;
+                    }
+                    string accountTypeString = Utilities.GetNewAccountType();
+
+                    try
+                    {
+                        await Utilities.SaveAccount(accountTypeString, name, balance, currency, accountManager);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Accounts couldn't be saved");
+                    }
+
                     break;
             }                     
         }
@@ -195,11 +227,21 @@ namespace FinanceTracker.View
             {
                 var incomeString = Utilities.GetTransactionAmount("income");
 
+                //TODO prüfen, ob positiv
                 if (Int32.TryParse(incomeString, out var incomeAmount))
                 {
                     var transactionCategory = incomeCategories[categoryNumber - 1];
 
-                    await Utilities.SaveTransactions(incomeAmount, transactionCategory, account, accountManager);
+                    var saveResult = await Utilities.SaveSingleTransaction(incomeAmount, transactionCategory, account, accountManager);
+
+                    if (saveResult.IsFailure)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("------------------------------");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(saveResult.Error);
+                        return;
+                    } 
 
                     Console.WriteLine();
                     Console.WriteLine("------------------------------");
@@ -244,23 +286,32 @@ namespace FinanceTracker.View
 
             do
             {
-                var transactions = await accountManager.LoadTransactions(account.Id);
-                await Utilities.ShowTransactions(account, transactions, accountManager);
-                var entry = AfterTransactionMenu(firstMenuOption, secondMenuOption);
+                try
+                {
+                    var transactions = await accountManager.LoadTransactions(account.Id);
+                    await Utilities.ShowTransactions(account, transactions, accountManager);
+                    var entry = AfterTransactionMenu(firstMenuOption, secondMenuOption);
 
-                if (entry == caseTransactionMenu)
-                {
-                    await TransactionMenu(account, accountManager);
+                    if (entry == caseTransactionMenu)
+                    {
+                        await TransactionMenu(account, accountManager);
+                    }
+                    else if (entry == caseIncomeMenu)
+                    {
+                        await IncomeMenu(account, accountManager);
+                    }
+                    else if (entry == "9")
+                    {
+                        showMainMenu = true;
+                    }
+                    else Utilities.YouReAFailureMessage();
                 }
-                else if (entry == caseIncomeMenu)
+                catch (Exception ex)
                 {
-                    await IncomeMenu(account, accountManager);
-                }
-                else if (entry == "9")
-                {
+                    Console.WriteLine("An error occured. Please try again later.");
+                    Log.Error(ex, $"Error in: {nameof(AfterTransactionMenuLoop)}");
                     showMainMenu = true;
                 }
-                else Utilities.YouReAFailureMessage();
             } while (!showMainMenu);
         }
 
@@ -295,7 +346,12 @@ namespace FinanceTracker.View
 
             if (amountIsValid)
             {
-                await Utilities.SaveTransactions(-amount, transactionCategory, account, accountManager);
+                var saveResult = await Utilities.SaveSingleTransaction(-amount, transactionCategory, account, accountManager); 
+                if (saveResult.IsFailure)
+                {
+                    Console.WriteLine($"{saveResult}");
+                    return;
+                }
                 Utilities.SubstractionMessage(amount, account, transactionCategory);
             }
             
@@ -330,7 +386,15 @@ namespace FinanceTracker.View
 
                             var amountString = Utilities.GetTransferAmount(fromAccount, toAccount);
 
-                            await Utilities.SaveAccounts(amountString, fromAccount, toAccount, accountManager);
+                            try
+                            {
+                                await Utilities.SaveTransferTransactions(amountString, fromAccount, toAccount, accountManager);
+                            }
+                            catch (Exception ex) 
+                            {
+                                Log.Error(ex, "couldn't save accounts");
+                            }
+                            
                         } 
                     }
                 }

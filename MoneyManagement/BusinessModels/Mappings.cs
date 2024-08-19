@@ -15,7 +15,6 @@ namespace MoneyManagement.BusinessModels
         public const string gAccount = "Girokonto";
 
         //Extension Method auf AccountEntity mit this
-        // CodeReview: nicht glütigen Fall mit Exception quittieren. Beispiel: NotImplementException
         public static Account AccountEntityToAccount(this AccountEntity account)
         {
             var balance = account.Transactions

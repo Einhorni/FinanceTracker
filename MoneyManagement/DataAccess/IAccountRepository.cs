@@ -1,4 +1,5 @@
-﻿using MoneyManagement.Entities;
+﻿using CSharpFunctionalExtensions;
+using MoneyManagement.Entities;
 using MoneyManagement.Models;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace MoneyManagement.DataAccess
 {
     public interface IAccountRepository
     {
-        Task<Account> LoadAccount(Guid id);
+        Task<Maybe<Account>> LoadAccount(Guid id);
         public Task<List<Account>> LoadAccounts();
         public Task SaveAccount(Account account);
     }

@@ -11,8 +11,8 @@ namespace MoneyManagement.Models
         public string Category { get; set; } = string.Empty;
         public Guid AccountId { get; set; }
 
-        public Guid? ReceivingAccountId { get; set; } = Guid.Empty;
-        public Guid? SendingAccountId { get; set; } = Guid.Empty;
+        public Guid? ReceivingAccountId { get; set; } 
+        public Guid? SendingAccountId { get; set; } 
 
         public Transaction(decimal amount, string category, Guid accountId)
         {

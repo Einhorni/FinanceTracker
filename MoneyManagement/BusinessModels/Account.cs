@@ -34,6 +34,7 @@
 
         public override bool TransactionValid(Transaction transaction)
         {
+            //valid, if amount positive or balance and overdraftlimit more than amount
             if (transaction.Amount > 0) { return true; }
             else { return (-Balance - OverdraftLimit) <= transaction.Amount; } 
         }
@@ -54,6 +55,7 @@
 
         public override bool TransactionValid(Transaction transaction)
         {
+            //valid, if amount positive or balance more than amount
             if (transaction.Amount > 0) { return true; }
             else { return (-Balance) <= transaction.Amount; }
         }
